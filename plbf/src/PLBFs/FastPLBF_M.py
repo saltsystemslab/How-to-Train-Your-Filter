@@ -1,9 +1,9 @@
-from utils.ThresMaxDivDP import MaxDivDP, ThresMaxDiv
-from utils.OptimalFPR_M import OptimalFPR_M
-from utils.SpaceUsed import SpaceUsed
-from utils.ExpectedFPR import ExpectedFPR
-from utils.const import INF
-from PLBF_M import PLBF_M
+from .utils.ThresMaxDivDP import MaxDivDP, ThresMaxDiv
+from .utils.OptimalFPR_M import OptimalFPR_M
+from .utils.SpaceUsed import SpaceUsed
+from .utils.ExpectedFPR import ExpectedFPR
+from .utils.const import INF
+from .PLBF_M import PLBF_M
 
 import time
 import argparse

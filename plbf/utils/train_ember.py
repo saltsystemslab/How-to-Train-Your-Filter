@@ -1,4 +1,5 @@
-from ember_import.ember.ember import create_metadata, read_vectorized_features
+
+from ember_import.ember.ember import read_metadata, create_metadata, create_vectorized_features, read_vectorized_features
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -9,6 +10,42 @@ import pickle
 import os
 import csv
 
+def get_ember_keys(create_data=False):
+    """
+    Obtains a list of vectorized positive and negative keys from the ember dataset.
+    """
+    # first, create the data if necessary
+    if create_data:
+        create_metadata("data/ember")
+        create_vectorized_features("data/ember", feature_version=1)
+
+    # next, do an initial read of the objects
+    meta_df = read_metadata("data/ember")
+    x_train, y_train, x_test, y_test = read_vectorized_features("data/ember", feature_version=1)
+    
+
+    total_x = np.vstack([x_train, x_test])
+    total_y = np.vstack([y_train, y_test])
+
+    
+    # filter out files where there is no label
+
+    # important - the meta_df has train and test rows aligned with the vectorized features.
+    # we can tell because of how creating metadata and vectorized features uses the same
+    # raw features, but also because the example notebook in 'resources' runs an example
+    # where index is used to connect the rows.
+    return np.array(meta_df['sha256']), total_x, total_y
+    
+    # according to the Ember paper, 0 is benign, 1 is malicious, -1 is unlabeled
+    # malicious_rows = (total_y == 1)
+    # benign_rows = (total_y == 0)
+    # pos_meta = meta_df[malicious_rows]
+    # pos_x = total_x[malicious_rows]
+    # pos_y = total_y[malicious_rows]
+    # neg_meta = meta_df[benign_rows]
+    # neg_x = total_x[benign_rows]
+    # neg_y = total_y[benign_rows]
+    # return np.array(pos_meta['sha256']), pos_x, pos_y, np.array(neg_meta['sha256']), neg_x, neg_y
 # create the training and testing metadata
 create_metadata("data/ember")
 
