@@ -7,7 +7,7 @@ This repository contains a compilation of implementations for **[Ada-BF](https:/
 ## Requirements
 To prepare the **AdaptiveQF**, you first need to have [SplinterDB](https://splinterdb.org/) set up in the `adaptiveqf/external` folder. Then, run `make` to create the necessary executables.
 
-The datasets **can be directly downloaded [here]()**. When downloaded, they should be placed in the `learned/data` folder.
+The datasets **can be directly found as compressed files in the `learned/data/compressed`** folder. When decompressed, they should be placed in the `learned/data` folder.
 
 <details>
 <summary>Manually downloading and processing the datasets can also be done by using the instructions in this section.</summary>
