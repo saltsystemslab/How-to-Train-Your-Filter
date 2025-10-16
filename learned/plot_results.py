@@ -308,7 +308,11 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, learn
                 (adaptive_df['size'] == construction_sizes[dataset])
         ]
         if len(adaptive_data) != 0:
+<<<<<<< HEAD
             bar = {'Filter Inserts': median(adaptive_df['insert_time']), 'Reverse Map Updates': median(adaptive_df['map_time']) * dataset_pos[dataset]}
+=======
+            bar = {'Filter Inserts': median(adaptive_df['insert_time']) + median(adaptive_df['alloc_time']), 'Reverse Map Updates': median(adaptive_df['amortized_map_insert']) * dataset_pos[dataset]}
+>>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
             adaptive_bar_heights = [bar.get(part, 0) for part in all_categories]  
             adaptive_total_height = sum(adaptive_bar_heights)
             adaptive_bar_prop = [part / adaptive_total_height for part in adaptive_bar_heights]

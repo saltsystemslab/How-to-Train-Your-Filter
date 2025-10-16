@@ -4,10 +4,14 @@
         "algorithm": "c",
         "cmath": "c",
         "gqf_file.h": "c",
+<<<<<<< HEAD
         "splinterdb.h": "c",
         "hashutil.h": "c",
         "rand.h": "c",
         "rand_util.h": "c",
         "splinter_util.h": "c"
+=======
+        "splinterdb.h": "c"
+>>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
     }
 }
