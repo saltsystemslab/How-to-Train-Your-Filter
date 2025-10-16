@@ -1,4 +1,0 @@
-[submodule "adaptiveqf"]
-    path = adaptiveqf
-    url = https://github.com/diandremiguels/AdaptiveQFDistributions.git
-    branch = main
