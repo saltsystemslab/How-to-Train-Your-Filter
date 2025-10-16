@@ -12,3 +12,5 @@ models/*
 old/*
 results/*
 aqfdata/*
+ember_import/*
+!ember_import/.gitkeep

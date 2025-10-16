@@ -285,9 +285,9 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, learn
             plbf_bar_heights = [bar.get(part, 0) for part in all_categories]
             plbf_total_height = np.sum(plbf_bar_heights)
             plbf_bar_prop = [part / plbf_total_height for part in plbf_bar_heights]
-        else:
-            print("couldn't find data for plbf on ", dataset)
-            exit(1)
+        # else:
+        #     print("couldn't find data for plbf on ", dataset)
+        #     exit(1)
         adabf_data = learned_df[
                 (learned_df['dataset'] == dataset) &
                 (learned_df['bytes'] == construction_sizes[dataset]) &
@@ -308,7 +308,11 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, learn
                 (adaptive_df['size'] == construction_sizes[dataset])
         ]
         if len(adaptive_data) != 0:
+<<<<<<< HEAD
+            bar = {'Filter Inserts': median(adaptive_df['insert_time']), 'Reverse Map Updates': median(adaptive_df['map_time']) * dataset_pos[dataset]}
+=======
             bar = {'Filter Inserts': median(adaptive_df['insert_time']) + median(adaptive_df['alloc_time']), 'Reverse Map Updates': median(adaptive_df['amortized_map_insert']) * dataset_pos[dataset]}
+>>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
             adaptive_bar_heights = [bar.get(part, 0) for part in all_categories]  
             adaptive_total_height = sum(adaptive_bar_heights)
             adaptive_bar_prop = [part / adaptive_total_height for part in adaptive_bar_heights]
@@ -350,50 +354,9 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, learn
         for label in axs[current_count].get_yticklabels():
             label.set_fontsize('x-small')
         current_count += 1
-    fig.legend(loc="lower center", ncol=len(all_categories), bbox_to_anchor=(0.5, -0.25), fontsize='medium', handlelength=1)
+    fig.legend(loc="upper center", ncol=len(all_categories), bbox_to_anchor=(0.5, 1.25), fontsize='medium', handlelength=1)
     plt.savefig(f'figures/combined_const_with_prop.pdf', bbox_inches='tight')
     plt.clf()
-
-    # now for the construction, need to keep the order of the datasets
-    # and keep track of the bar heights across datasets
-    x = np.arange(len(construction_sizes))
-    plbf_heights = [dataset_results[dataset]['plbf']['height'] for dataset in construction_sizes]
-    adabf_heights = [dataset_results[dataset]['adabf']['height'] for dataset in construction_sizes]
-    adaptive_heights = [dataset_results[dataset]['adaptiveqf']['height'] for dataset in construction_sizes]
-    width = 0.15
-    plt.figure(figsize=(12,2))
-    plt.bar(x-0.2, plbf_heights, width, color=FILTER_COLORS['plbf'], label='plbf')
-    plt.bar(x, adabf_heights, width, color=FILTER_COLORS['adabf'], label='adabf')
-    plt.bar(x+0.2, adaptive_heights, width, color=FILTER_COLORS['aqf'], label='adaptiveqf')
-    plt.xticks(x, [dataset for dataset in construction_sizes])
-    plt.ylabel('Construct Time (s)')
-    plt.yscale('log')
-    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
-    plt.tight_layout()
-    plt.savefig("figures/combined_overall_construction.pdf", bbox_inches='tight')
-    plt.clf()
-
-    x = np.arange(3) # set up a bar for each filter
-    width = 0.6
-    fig, axs = plt.subplots(1, 4, figsize=(12,2), layout='constrained')
-    current_count = 0        
-    axs[0].set_ylabel("Const Time Prop")
-    for dataset in construction_sizes:
-        axs[current_count].set_title(dataset)
-        bottom = np.zeros(3)
-        plbf_bar_prop = dataset_results[dataset]['plbf']['prop']
-        adabf_bar_prop = dataset_results[dataset]['adabf']['prop']
-        adaptiveqf_bar_prop = dataset_results[dataset]['adaptiveqf']['prop']
-        for (i, part) in enumerate(all_categories):
-            values = [plbf_bar_prop[i], adabf_bar_prop[i], adaptiveqf_bar_prop[i]]
-            axs[current_count].bar(x, values, bottom=bottom, label=(part if current_count == 0 else ""), color=COMP_COLORS[part], width=width)
-            bottom += values
-        axs[current_count].set_xticks(x, ['plbf', 'ada-bf', 'adaptiveqf'])
-        axs[current_count].set_xlim(-0.5, 2.5) # may need to get rid of this later?
-        current_count += 1  
-    fig.legend(loc='outside center right')
-    plt.savefig(f'figures/combined_constructiontime_prop.pdf')  
-    plt.clf() 
 
 def plot_query_times(learned_filename: str, adaptive_filename: str):
     # first establish the categories for the queries
@@ -419,9 +382,9 @@ def plot_query_times(learned_filename: str, adaptive_filename: str):
             plbf_bar_heights = [bar.get(part, 0) for part in all_categories]
             plbf_total_height = sum(plbf_bar_heights)
             plbf_bar_prop = [part / plbf_total_height for part in plbf_bar_heights]
-        else:
-            print("couldn't find data for plbf on ", dataset)
-            exit(1)
+        # else:
+        #     print("couldn't find data for plbf on ", dataset)
+        #     exit(1)
         adabf_data = plbf_df[
                 (plbf_df['dataset'] == dataset) &
                 (plbf_df['bytes'] == construction_sizes[dataset]) & 
@@ -493,49 +456,9 @@ def plot_query_times(learned_filename: str, adaptive_filename: str):
         for label in axs[current_count].get_yticklabels():
             label.set_fontsize('x-small')
         current_count += 1
-    fig.legend(loc="lower center", ncol=len(all_categories), bbox_to_anchor=(0.5, -0.25), fontsize='medium', handlelength=1)
+    fig.legend(loc="upper center", ncol=len(all_categories), bbox_to_anchor=(0.5, 1.25), fontsize='medium', handlelength=1)
     plt.savefig(f'figures/combined_query_with_prop.pdf', bbox_inches='tight')
     plt.clf()
-
-    x = np.arange(4)
-    width = 0.15
-    plt.figure(figsize=(12,2))
-    plt.bar(x-0.2, plbf_heights, width, color=FILTER_COLORS['plbf'], label='plbf')
-    plt.bar(x, adabf_heights, width, color=FILTER_COLORS['adabf'], label='adabf')
-    plt.bar(x+0.2, adaptive_heights, width, color=FILTER_COLORS['aqf'], label='adaptiveqf')
-    plt.xticks(x, [dataset for dataset in construction_sizes])
-    # plt.xlabel('Datasets')
-    plt.ylabel('Amort. Query Time (s)')
-    plt.yscale('log')
-    plt.legend(loc="center left", bbox_to_anchor=(1, 0.5))
-    plt.tight_layout()
-    plt.savefig("figures/combined_overall_query.pdf", bbox_inches='tight')
-    plt.clf()
-
-    # plot adaptive parts
-    # plot parts
-    x = np.arange(3)
-    width = 0.6
-    fig, axs = plt.subplots(1, 4, figsize=(12,2), layout='constrained')
-    current_count = 0        
-    axs[0].set_ylabel("Amort. Query Time Prop")
-    for dataset in construction_sizes:
-        axs[current_count].set_title(dataset)
-        bottom = np.zeros(3)
-        plbf_bar_prop = dataset_results[dataset]['plbf']['prop']
-        adabf_bar_prop = dataset_results[dataset]['adabf']['prop']
-        adaptiveqf_bar_prop = dataset_results[dataset]['adaptiveqf']['prop']
-        for (i, part) in enumerate(all_categories):
-            values = [plbf_bar_prop[i], adabf_bar_prop[i], adaptiveqf_bar_prop[i]]
-            axs[current_count].bar(x, values, bottom=bottom, label=(part if current_count == 0 else ""), color=COMP_COLORS[part], width=width)
-            bottom += values
-        
-        axs[current_count].set_xticks(x, ['plbf', 'ada-bf', 'adaptiveqf'])
-        axs[current_count].set_xlim(-0.5, 2.5)
-        current_count += 1
-    fig.legend(loc='outside center right')
-    plt.savefig(f'figures/combined_querytime_prop.pdf')  
-    plt.clf()       
 
 def plot_changing_model_exp(learned_filepath):
     learned_df = pd.read_csv(learned_filepath)

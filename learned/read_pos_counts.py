@@ -18,6 +18,10 @@ dataset = results.dataset
 
 keys, vectorized_keys, labels = obtain_raw_and_vectorized_keys(dataset, create_data=False)
 pos_keys = keys[labels == CONFIG[dataset][POS_INDICATOR]]
+<<<<<<< HEAD
+# print(f"{dataset} positive keys: {len(pos_keys)}, total keys is: {len(keys)}, recommended q-bits is {ceil(log2(len(pos_keys)))}")
+=======
 # print(f"{dataset} positive keys: {len(pos_keys)}, recommended q-bits is {ceil(log2(len(pos_keys)))}")
+>>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
 print(ceil(log2(len(pos_keys))))
 exit(0)

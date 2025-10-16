@@ -155,7 +155,10 @@ for i in range(num_trials):
                 search_times = []
                 filter_times = []
                 first_half_times = []
+<<<<<<< HEAD
+=======
                 first_half_fp = list()
+>>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
                 first_half_fp_cnt = 0
                 first_half_neg_cnt = 0
                 query_count = 0
@@ -177,7 +180,10 @@ for i in range(num_trials):
                 print(f"Throughput: {throughput} queries/sec")            
                 fpr = fp_cnt / (fp_cnt + len(neg_keys))
                 print(f"False Positive Rate: {fpr} [{fp_cnt} / ({fp_cnt} + {len(neg_keys)})]")
+<<<<<<< HEAD
+=======
                 first_half_fp = list(set(first_half_fp))
+>>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
 
                 # now, we save the results to a file
                 if QUERY_PATH == "none":
