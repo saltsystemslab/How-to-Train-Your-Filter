@@ -1,3 +1,4 @@
-[submodule "splinterdb"]
-	path = splinterdb
-	url = https://github.com/vmware/splinterdb.git
+[submodule "adaptiveqf"]
+    path = adaptiveqf
+    url = https://github.com/diandremiguels/AdaptiveQFDistributions.git
+    branch = main
