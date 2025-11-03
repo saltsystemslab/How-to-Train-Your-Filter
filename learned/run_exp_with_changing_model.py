@@ -15,7 +15,7 @@ from filelock import FileLock
 
 
 FILTERS = ["plbf", "adabf"]
-RESULTS_PATH = "results/changing_model_size.csv"
+RESULTS_PATH = "../results/learned/changing_model_size.csv"
 RESULTS_COLUMNS = ["dataset", "filter", "bytes", "model_bytes", "num_queries", "model_accuracy", "fpr"]
 
 def write_results_safely(file_path, columns, row):

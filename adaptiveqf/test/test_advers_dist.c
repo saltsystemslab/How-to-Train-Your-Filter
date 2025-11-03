@@ -15,7 +15,6 @@
 #include "include/exp_utility.h"
 
 #define MAX_DATA_LINES 10000000
-#define MAX_LINE_LENGTH 2048
 
 uint64_t hash_str(char *str) {
 	uint64_t hash = 5381;
@@ -48,65 +47,36 @@ int main(int argc, char **argv)
 	char* dataset = get_dataset_name(filename);
 	char* dist = get_dist_name(indexfilename);
 
-	FILE * file_ptr;
-	file_ptr = fopen(filename, "r");
-	long *offsets = malloc(sizeof(long) * MAX_DATA_LINES);
-
-	if (NULL == file_ptr) {
-		printf("file can't be opened \n");
-		return EXIT_FAILURE;
-	}
-
 	// First we go into the file and collect all of the insertions from the dataset.
-	int num_inserts = 0;
-	int current_index = 0;
-	uint64_t *insert_set = malloc(MAX_DATA_LINES * sizeof(uint64_t));
-	if (!insert_set) {
-		printf("malloc insert_set failed");
-		return EXIT_FAILURE;
-	}
-	if (RAND_bytes((unsigned char*)insert_set, MAX_DATA_LINES * sizeof(uint64_t)) != 1) {
-		printf("RAND_bytes failed\n");
-		return EXIT_FAILURE;
-	}
+	
 	if (verbose) printf("Processing insertions\n");
-	char buffer[256];
-	fgets(buffer, 256, file_ptr); // get rid of the first row giving column names
-	offsets[current_index] = ftell(file_ptr);
-	while (fgets(buffer, 256, file_ptr)) {
-		// first, obtain the label and item for the current row of the dataset
-		current_index += 1;
-		offsets[current_index] = ftell(file_ptr);
-		char *label = NULL;
-		char *item = NULL;
-		char *token = strtok(buffer, ",");
-		int count = 0;
-		while (token != NULL) {
-			count++;
-			if (count == label_index) {
-				label = token;
-			} else if (count == obj_index) {
-				item = token;
-			}
-			token = strtok(NULL, ",");
-		}
-		// now, depending on the label, determine if it should be inserted or not
-		if (strcmp(filename,"../learned/data/malicious_url_scores.csv") == 0) {
-			// here they're labeled as benign/malicious instead of 0 or 1. We say malicious == 1.
-			if (label != NULL && strcmp(label,"malicious") == 0) {
-				char *item_copy = strdup(item);
-				insert_set[num_inserts] = hash_str(item_copy);
-				num_inserts++;
-			}
-		} else {
-			if (label != NULL && atoi(label) == 1) {
-				char *item_copy = strdup(item);
-				insert_set[num_inserts] = hash_str(item_copy);
-				num_inserts++;
-			}
-		}
+
+	uint64_t *insert_set = calloc(MAX_DATA_LINES, sizeof(uint64_t));
+	if (!insert_set) {
+		printf("calloc insert_set failed\n");
+		return EXIT_FAILURE;
 	}
-	if (verbose) fprintf(stderr, "finished reading insertions\n");
+	long *offsets = calloc(sizeof(long), MAX_DATA_LINES);
+	if (!offsets) {
+		printf("calloc offsets failed\n");
+		return EXIT_FAILURE;
+	}
+	char *buffer = malloc(4096);
+	if (!buffer) {
+		printf("malloc buffer failed\n");
+		return EXIT_FAILURE;
+	}
+
+	int num_inserts;
+	int read_result = read_file(filename, obj_index, label_index, 
+								buffer, offsets, insert_set, 
+								&num_inserts);
+	if (!read_result) {
+		printf("Insertion reading failed\n");
+		return EXIT_FAILURE;
+	}
+
+	if (verbose) fprintf(stderr, "finished reading %d insertions\n", num_inserts);
 
 	// At this point, we now have a large list of insertions,
 	// and a list of file offsets corresponding to indices.
@@ -114,79 +84,33 @@ int main(int argc, char **argv)
 	// now, we want to read through the index file,
 	// and fseek to whatever the query is to create a query set.
 	
-	uint64_t *query_set = malloc(num_queries * sizeof(uint64_t));
-	uint64_t *query_labels = malloc(num_queries * sizeof(uint64_t));
+	uint64_t *query_set = calloc(num_queries, sizeof(uint64_t));
 	if (!query_set) {
-		fprintf(stderr, "malloc failed for query_set\n");
-		return 1;
-	}
-	if (!query_labels) {
-		fprintf(stderr, "malloc failed for query_labels\n");
-		return 1;
-	}
-	if (verbose) fprintf(stderr, "initialized query set\n");
-
-	FILE * index_file_ptr = fopen(indexfilename, "r");
-	if (!index_file_ptr) {
-		printf("couldn't open index file\n");
+		fprintf(stderr, "calloc failed for query_set\n");
 		return EXIT_FAILURE;
 	}
-	fgets(buffer, 256, index_file_ptr); // get rid of the first row giving column names
-	int current_query = 0;
-	int pos_count = 0;
-	while (fgets(buffer, 256, index_file_ptr)) {
-		// first, obtain the index from the current row
-		int index = atoi(strtok(buffer, ","));
-		// now, use the array of offsets to go to the current element
-		if (fseek(file_ptr, offsets[index], SEEK_SET) != 0) {
-			fprintf(stderr, "fseek failed");
-			fclose(index_file_ptr);
-			return EXIT_FAILURE;
-		}
-		// finally, obtain the object that we want to insert
-		if(!fgets(buffer, 256, file_ptr)) {
-			fprintf(stderr, "failed to get stuff from file");
-		}
-		char *label = NULL;
-		char *item = NULL;
-		char *token = strtok(buffer, ",");
-		int count = 0;
-		while (token != NULL) {
-			count++;
-			if (count == label_index) {
-				label = token;
-			} else if (count == obj_index) {
-				item = token;
-			}
-			token = strtok(NULL, ",");
-		}
-		// insert all corresponding indexes into the query set.
-		char *item_copy = strdup(item);
-		query_set[current_query] = hash_str(item_copy);
-		// also track the corresponding label for the query...
-		if (strcmp(filename,"../learned/data/malicious_url_scores.csv") == 0) {
-			// here they're labeled as benign/malicious instead of 0 or 1. We say malicious urls are positive keys.
-			// printf("label: %s\n", label);
-			if (label != NULL && strcmp(label,"malicious") == 0) {
-				query_labels[current_query] = 1;
-				pos_count++;
-			} else {
-				query_labels[current_query] = 0;
-			}
-		} else {
-			if (label != NULL) {
-				query_labels[current_query] = atoi(label);
-				if (query_labels[current_query] == 1) {
-					pos_count++;
-				}
-			}
-		}
-		current_query++;
+	uint64_t *query_labels = calloc(num_queries, sizeof(uint64_t));
+	if (!query_labels) {
+		fprintf(stderr, "calloc failed for query_labels\n");
+		return EXIT_FAILURE;
 	}
-	if (verbose) fprintf(stderr, "finished processing index file\n");
-	fclose(index_file_ptr);
+	
+	int total_queries = 0;
+	int pos_count = 0;
+	if (verbose) fprintf(stderr, "Processing queries\n");
 
-	// create a timer
+	int query_read_result = read_queries(indexfilename, filename, obj_index, label_index, 
+										buffer, offsets, query_set, query_labels, 
+										&pos_count, &total_queries);
+	if (!query_read_result) {
+		printf("Query reading failed\n");
+		return EXIT_FAILURE;
+	}
+	if (verbose) fprintf(stderr, "finished reading %d queries with %d positives\n", total_queries, pos_count);
+
+	// Now insert all elements into the filter and perform the adversarial test
+
+	QF qf;
 	struct timeval timecheck;
 	
 	for (int i = 0; i < num_trials; i++) {
@@ -199,7 +123,6 @@ int main(int argc, char **argv)
 			// create the filter
 			uint64_t nhashbits = qbits + rbits;
 			uint64_t nslots = (1ULL << qbits);
-			QF qf;
 			
 			gettimeofday(&timecheck, NULL);
 			uint64_t start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec, end_time;
@@ -315,7 +238,7 @@ int main(int argc, char **argv)
 
 
 			FILE * outputptr;
-			outputptr = fopen("results/aqf_advers_results.csv", "a");
+			outputptr = fopen("../results/aqf/aqf_advers_results.csv", "a");
 			fseek(outputptr, 0, SEEK_END);
 			long filesize = ftell(outputptr);
 			if (filesize == 0) {
@@ -340,5 +263,6 @@ int main(int argc, char **argv)
 	free(query_set);
 	free(query_labels);
 	free(insert_set);
+	free(buffer);
 	return 0;
 }

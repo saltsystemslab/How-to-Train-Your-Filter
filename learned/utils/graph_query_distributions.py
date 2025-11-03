@@ -10,7 +10,7 @@ hashed_querysets = ["hashed_zipf_10M_ember"]
 
 for unhashed_queryset in unhashed_querysets:
     plt.figure(figsize=(3.5,3.5))
-    df = pd.read_csv('data/updated_query_indices/' + unhashed_queryset + '.csv')
+    df = pd.read_csv('../data/updated_query_indices/' + unhashed_queryset + '.csv')
     # indexes = df.iloc[:, 1]
     plt.hist(df, bins=50, log=True)
     plt.xlabel('Index')
@@ -22,12 +22,12 @@ for unhashed_queryset in unhashed_querysets:
 
 for hashed_queryset in hashed_querysets:
     plt.figure(figsize=(3.5,3.5))
-    df = pd.read_csv('data/updated_query_indices/' + hashed_queryset + '.csv')
+    df = pd.read_csv('../data/updated_query_indices/' + hashed_queryset + '.csv')
     # indexes = df.iloc[:, 1]
     plt.hist(df, bins=50, log=True)
     plt.xlabel('Index')
     plt.ylabel('Frequency')
     plt.xticks([0, 200000, 400000, 600000])
     plt.tight_layout()
-    plt.savefig('figures/queries_' + hashed_queryset + '.pdf')
+    plt.savefig('../results/figures/queries_' + hashed_queryset + '.pdf')
     plt.clf()

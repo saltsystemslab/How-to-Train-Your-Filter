@@ -1,18 +1,12 @@
 """
 This file includes methods for encoding urls into vectors for model learning.
 
-The feature extraction was taken from https://www.kaggle.com/code/bytadit/malicious-url-detection-with-ml-96-7-acc/notebook
+The feature extraction originates from https://www.kaggle.com/code/bytadit/malicious-url-detection-with-ml-96-7-acc/notebook
 """
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from bs4 import BeautifulSoup
-import urllib
 import re
-from sklearn.preprocessing import LabelEncoder
 from urllib.parse import urlparse
 from tld import get_tld
-
 
 def vectorize_url(url : str):
     """

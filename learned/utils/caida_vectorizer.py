@@ -18,7 +18,7 @@ verbose = False if results.verbose is None else results.verbose
 if verbose:
     print("reading file")
     tqdm.pandas()
-df = pd.read_csv("data/20140619-140100.csv")
+df = pd.read_csv("../data/20140619-140100.csv")
 
 # Filter for TCP and UDP only
 if verbose:
@@ -63,4 +63,4 @@ else:
 if verbose:
     print("saving file")
 df_final = df.drop(columns=['Info'])
-df_final.to_csv('data/caida.csv', index=False)
+df_final.to_csv('../data/caida.csv', index=False)

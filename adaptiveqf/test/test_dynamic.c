@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 			token = strtok(NULL, ",");
 		}
 		// now, depending on the label, determine if it should be inserted or not
-		if (strcmp(filename,"../learned/data/malicious_url_scores.csv") == 0) {
+		if (strcmp(filename,"../data/malicious_url_scores.csv") == 0) {
 			// here they're labeled as benign/malicious instead of 0 or 1. We say malicious == 1.
 			if (label != NULL) {
 				char *item_copy = strdup(item);
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
 		char *item_copy = strdup(item);
 		query_set[current_query] = hash_str(item_copy);
 		// also track the corresponding label for the query...
-		if (strcmp(filename,"../learned/data/malicious_url_scores.csv") == 0) {
+		if (strcmp(filename,"../data/malicious_url_scores.csv") == 0) {
 			// here they're labeled as benign/malicious instead of 0 or 1. We say malicious urls are positive keys.
 			if (label != NULL && strcmp(label,"malicious") == 0) {
 				query_labels[current_query] = 1;
@@ -320,7 +320,7 @@ int main(int argc, char **argv)
 				// if (verbose) printf("False positive rate: %f\n", inst_fpr);
 				// write the instantaneous fpr to file
 				FILE * outputptr;
-				outputptr = fopen("results/aqf_results_dynamic.csv", "a");
+				outputptr = fopen("../results/aqf/aqf_results_dynamic.csv", "a");
 				fseek(outputptr, 0, SEEK_END);
 				long filesize = ftell(outputptr);
 				if (filesize == 0) {
@@ -371,5 +371,6 @@ int main(int argc, char **argv)
 	free(query_set);
 	free(query_labels);
 	free(insert_set);
+	free(buffer);
 	return 0;
 }

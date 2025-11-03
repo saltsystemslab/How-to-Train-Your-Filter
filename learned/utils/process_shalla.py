@@ -22,4 +22,4 @@ benign_urls.loc[:, "label"] = 0
 
 combined_data = pd.concat([benign_urls[["url", "label"]], malicious_urls[["url", "label"]]], ignore_index=True)
 
-combined_data.to_csv("data/shalla_combined.csv", index=False)
+combined_data.to_csv("../data/shalla_combined.csv", index=False)

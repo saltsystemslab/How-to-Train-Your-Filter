@@ -22,36 +22,38 @@ double create_zipfian(double s, double max) {
     }
 }
 
+
+
 int main(int argc, char **argv) {
     printf("Started writing queries\n");
     float zip_constant = 1.5f;
-	if (argc < 2) {
-		fprintf(stderr, "Please specify \nthe number of queries\n(optional)the zipfian constant");
+	if (argc < 4) {
+		fprintf(stderr, "Please specify \nthe number of queries\nthe dataset\nthe max index\n(optional) the Zipfian constant");
 		exit(1);
-	} else if (argc > 2) {
+	} else if (argc > 4) {
         // zipfian constant if we want to do zipfian rather than uniform queries
-        zip_constant = atof(argv[2]);
+        zip_constant = atof(argv[4]);
     }
     int num_queries = atoi(argv[1]);
+    char *dataset = argv[2];
+    int max = atoi(argv[3]);
+    
     printf("Num queries: %i\n", num_queries);
+    char output_name[100];
+    sprintf(output_name, "../data/%s_%dM_%s.bin", ((argc > 4) ? "zipf_" : ""), num_queries / 10000000, dataset);
 
-    int num_datasets = 3;
-    char *datasets[] = {"news.bin", "url.bin", "ember.bin"};
-    int max[] = {35919, 162798, 800000};
-    for (int i = 0; i < num_datasets; i++) {
-        FILE *f = fopen(datasets[i], "wb");
+    FILE *f = fopen(output_name, "wb");
         for (int j = 0; j < num_queries; j++) {
             double value = 0;
             // If the user doesn't provide a zipfian constant, we assume we generate a uniform distribution instead
-            if (argc > 2) {
-                value = create_zipfian(zip_constant, max[i]);
+            if (argc > 4) {
+                value = create_zipfian(zip_constant, max);
             } else {
-                value = rand_uniform((int)max[i]);
+                value = rand_uniform(max);
             }
             int32_t result = (int32_t) value;
             fwrite(&result, sizeof(int32_t), 1, f);
         }
         fclose(f);
-    }
     return 0;
 }

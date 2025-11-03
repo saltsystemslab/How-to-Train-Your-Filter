@@ -17,7 +17,7 @@ from filelock import FileLock
 
 
 FILTERS = ["plbf", "adabf"]
-RESULTS_PATH = "results/dynamic_results_with_model_rebuild.csv"
+RESULTS_PATH = "../results/learned/dynamic_results_with_model_rebuild.csv"
 RESULTS_COLUMNS = ["dataset", "filter", "bytes", "query_dist", "num_queries", 
                             "curr_query", "fpr"]
 

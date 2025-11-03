@@ -16,8 +16,8 @@ from filelock import FileLock
 
 
 FILTERS = ["plbf", "adabf"]
-RESULTS_PATH = "results/overall_results_with_model_scores.csv"
-ADVERSARIAL_PATH = "results/overall_advers_with_model_scores.csv"
+RESULTS_PATH = "./results/learned/overall_results_with_model_scores.csv"
+ADVERSARIAL_PATH = "./results/learned/overall_advers_with_model_scores.csv"
 RESULTS_COLUMNS = ["dataset", "filter", "bytes", "query_dist", "num_queries", 
                             "model_accuracy", "fpr"]
 ADVERS_COLUMNS = ["dataset", "filter", "bytes", "num_queries", "freq", "fpr"]

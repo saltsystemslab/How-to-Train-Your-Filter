@@ -35,8 +35,8 @@ CONFIG = {
         SCORE_KEY: "score"
     },
     URL_DATASET: {
-        SCORES_PATH: "data/malicious_url_scores.csv",
-        SOURCE_PATH: "data/malicious_url_scores.csv",
+        SCORES_PATH: "../data/malicious_url_scores.csv",
+        SOURCE_PATH: "../data/malicious_url_scores.csv",
         OBJ_KEY: "url",
         LABEL_KEY: "type",
         SCORE_KEY: "prediction_score",
@@ -45,7 +45,7 @@ CONFIG = {
         LEAVES: 10,
     },
     EMBER_DATASET: {
-        SCORES_PATH: "data/combined_ember_metadata.csv",
+        SCORES_PATH: "../data/combined_ember_metadata.csv",
         SOURCE_PATH: "data/ember",
         OBJ_KEY: "sha256",
         LABEL_KEY: "label",
@@ -55,8 +55,8 @@ CONFIG = {
         LEAVES: 30
     },
     SHALLA_DATASET: {
-        SCORES_PATH: "data/shalla_combined.csv",
-        SOURCE_PATH: "data/shalla_combined.csv",
+        SCORES_PATH: "../data/shalla_combined.csv",
+        SOURCE_PATH: "../data/shalla_combined.csv",
         OBJ_KEY: "url",
         LABEL_KEY: "label",
         SCORE_KEY: "score",
@@ -65,8 +65,8 @@ CONFIG = {
         LEAVES: 140
     },
     CAIDA_DATASET: {
-        SCORES_PATH: "data/caida.csv",
-        SOURCE_PATH: "data/caida.csv",
+        SCORES_PATH: "../data/caida.csv",
+        SOURCE_PATH: "../data/caida.csv",
         OBJ_KEY: "No.",
         LABEL_KEY: "Label",
         SCORE_KEY: "score",

@@ -1,3 +1,11 @@
 old/*
 logs/*
 !logs/.gitkeep
+data/*
+!data/compressed/
+results/figures/*
+!results/figures/.gitkeep
+results/learned/*
+!results/learned/.gitkeep
+results/aqf/*
+!results/aqf/.gitkeep

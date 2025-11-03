@@ -44,6 +44,8 @@ char* get_dataset_name(char *filename);
 
 char* get_dist_name(char *filename);
 
-int split_csv_fields(char *line, char *fields[], int max_fields);
+int read_file(char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *insert_set, int *num_inserts);
+
+int read_queries(char *indexfilename, char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *query_set, uint64_t *query_labels, int *pos_count, int *query_count);
 
 #endif

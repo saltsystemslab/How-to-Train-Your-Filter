@@ -1159,7 +1159,11 @@ static inline int insert(QF *qf, uint64_t hash, uint64_t count, uint64_t *ret_in
 	}
 
 	uint64_t runend_index = run_end(qf, hash_bucket_index);
-	
+	if (hash == 5796405351844918314) {
+		fprintf(stderr, "is occupied: %d\n", is_occupied(qf, hash_bucket_index));
+		fprintf(stderr, "is runend/counter: %d\n", is_runend_or_counter(qf, hash_bucket_index));
+		fprintf(stderr, "is extension/counter: %d\n", is_extension_or_counter(qf, hash_bucket_index));
+	}
 	if (might_be_empty(qf, hash_bucket_index) && runend_index == hash_bucket_index) { /* Empty slot */
 		// If slot is empty, insert new element and then call the function again to increment the counter
 		set_slot(qf, hash_bucket_index, hash_remainder);
@@ -1208,7 +1212,7 @@ static inline int insert(QF *qf, uint64_t hash, uint64_t count, uint64_t *ret_in
 			// Find a matching item in the filter, if one exists
 			//while (is_extension_or_counter(qf, current_index)) current_index++;
 			if (is_extension_or_counter(qf, current_index)) {
-				printf("here\n");
+				printf("found a matching item in the filter during an insert\n");
 			}
 			assert(!is_extension_or_counter(qf, current_index));
 			int was_runend = 0;
@@ -1225,7 +1229,6 @@ static inline int insert(QF *qf, uint64_t hash, uint64_t count, uint64_t *ret_in
 						break;
 					}
 					get_slot_info(qf, current_index, ret_hash, ret_hash_len, &count_info, &count_slots);
-
 					if (*ret_hash == ((hash >> (qf->metadata->quotient_bits + qf->metadata->bits_per_slot)) & BITMASK(*ret_hash_len * qf->metadata->bits_per_slot))) {
 						*ret_index = current_index;
 						*ret_hash = (*ret_hash << (qf->metadata->quotient_bits + qf->metadata->bits_per_slot)) | (hash & BITMASK(qf->metadata->quotient_bits + qf->metadata->bits_per_slot));
@@ -1234,6 +1237,11 @@ static inline int insert(QF *qf, uint64_t hash, uint64_t count, uint64_t *ret_in
 						if (GET_NO_LOCK(runtime_lock) != QF_NO_LOCK) {
 							qf_unlock(qf, hash_bucket_index, /*small*/ true);
 						}
+						// fprintf(stderr, "element was already in the filter\n");
+						
+						// fprintf(stderr, "is occupied: %d\n", is_occupied(qf, hash_bucket_index));
+						// fprintf(stderr, "is runend/counter: %d\n", is_runend_or_counter(qf, hash_bucket_index));
+						// fprintf(stderr, "is extension/counter: %d\n", is_extension_or_counter(qf, hash_bucket_index));
 						return 0;
 					}
 
@@ -1996,8 +2004,10 @@ int qf_insert_ret(QF *qf, uint64_t key, uint64_t count, uint64_t *ret_index, uin
 			return QF_NO_SPACE;
 		}
 	}
-	if (count == 0)
+	if (count == 0) {
+		fprintf(stderr, "no elements to insert\n");
 		return 0;
+	}
 
 	if (GET_KEY_HASH(flags) != QF_KEY_IS_HASH) {
 		if (qf->metadata->hash_mode == QF_HASH_DEFAULT)
@@ -2010,6 +2020,7 @@ int qf_insert_ret(QF *qf, uint64_t key, uint64_t count, uint64_t *ret_index, uin
 	
 	int ret = insert(qf, hash, count, ret_index, ret_hash, ret_hash_len, flags);
 	if (ret != 0) record(qf, "insert", hash, -1);
+	// if (ret != 0) fprintf(stderr, "no weird insertion\n");
 	return ret;
 }
 
@@ -2132,16 +2143,16 @@ uint64_t qf_query(const QF *qf, uint64_t key, uint64_t *ret_index, uint64_t *ret
 }
 
 static inline int get_slot_info(const QF *qf, uint64_t index, uint64_t *ext, int *ext_slots, uint64_t *count, int *count_slots) {
-	assert(!is_extension_or_counter(qf, index));
+	assert(!is_extension_or_counter(qf, index)); // check that this isn't an extension/counter
 
 	int curr = ++index;
 	if (ext != NULL) {
 		*ext = 0;
-		while (is_extension(qf, curr)) {
-			*ext |= get_slot(qf, curr) << ((curr - index) * qf->metadata->bits_per_slot);
+		while (is_extension(qf, curr)) { // find the last slot corresponding to the element
+			*ext |= get_slot(qf, curr) << ((curr - index) * qf->metadata->bits_per_slot); // load the slot information into 'ext'
 			curr++;
 		}
-		if (ext_slots != NULL) *ext_slots = curr - index;
+		if (ext_slots != NULL) *ext_slots = curr - index; // keep track of how many extra slots we needed
 	}
 	else while (is_extension(qf, index++));
 

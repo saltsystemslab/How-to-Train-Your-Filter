@@ -12,7 +12,7 @@ from filelock import FileLock
 import pandas as pd
 from sklearn.model_selection import train_test_split
 FILTERS = ["plbf", "adabf"]
-RESULTS_PATH = "results/degrad_results_with_model_scores.csv"
+RESULTS_PATH = "../results/learned/degrad_results_with_model_scores.csv"
 RESULTS_COLUMNS = ["dataset", "filter", "bytes", "query_dist", "num_queries", 
                                          "train_set_size", "fpr"]
 

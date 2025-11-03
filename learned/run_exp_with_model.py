@@ -26,8 +26,8 @@ def write_results_safely(file_path, columns, row):
         results_df = pd.concat([results_df, pd.DataFrame([row])], ignore_index=True)
         results_df.to_csv(file_path, index=False)
 
-RESULTS_PATH = "results/results_with_model.csv"
-ADVERSARIAL_PATH = "results/advers_with_model.csv"
+RESULTS_PATH = "./results/learned/results_with_model.csv"
+ADVERSARIAL_PATH = "./results/learned/advers_with_model.csv"
 RESULTS_COLUMNS = ["dataset", "filter", "bytes", "query_dist", "num_queries", 
                     "construct_time", "train_time", "model_accuracy",
                     "initial_scores", "segment_division", "t_f_finding", "insert_scores", 
@@ -155,10 +155,6 @@ for i in range(num_trials):
                 search_times = []
                 filter_times = []
                 first_half_times = []
-<<<<<<< HEAD
-=======
-                first_half_fp = list()
->>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
                 first_half_fp_cnt = 0
                 first_half_neg_cnt = 0
                 query_count = 0
@@ -180,10 +176,6 @@ for i in range(num_trials):
                 print(f"Throughput: {throughput} queries/sec")            
                 fpr = fp_cnt / (fp_cnt + len(neg_keys))
                 print(f"False Positive Rate: {fpr} [{fp_cnt} / ({fp_cnt} + {len(neg_keys)})]")
-<<<<<<< HEAD
-=======
-                first_half_fp = list(set(first_half_fp))
->>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
 
                 # now, we save the results to a file
                 if QUERY_PATH == "none":

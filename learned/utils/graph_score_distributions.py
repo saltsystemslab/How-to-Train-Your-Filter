@@ -1,5 +1,6 @@
 """
 Helper script which plots how the key score distributions look for each query set.
+Need to train models and store scores first before running this script.
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,10 +10,10 @@ from matplotlib.ticker import FormatStrFormatter
 fig, axs = plt.subplots(1, 4, figsize=(12,2), layout='constrained')
 axs[0].set_ylabel('Proportion of Keys')
 
-filepaths = {'url': {'path': 'data/malicious_url_scores.csv', 'label_name': 'type', 'pos_indicator': 'malicious', 'score_name': 'prediction_score'}, 
-             'ember': {'path': 'data/combined_ember_metadata.csv', 'label_name': 'label', 'pos_indicator': 1,'score_name': 'score'}, 
-             'shalla': {'path': 'data/shalla_combined.csv', 'label_name': 'label', 'pos_indicator': 1, 'score_name': 'score'}, 
-             'caida': {'path': 'data/backup/caida.csv', 'label_name': 'Label', 'pos_indicator': 1, 'score_name': 'score'}}
+filepaths = {'url': {'path': '../data/malicious_url_scores.csv', 'label_name': 'type', 'pos_indicator': 'malicious', 'score_name': 'prediction_score'}, 
+             'ember': {'path': '../data/combined_ember_metadata.csv', 'label_name': 'label', 'pos_indicator': 1,'score_name': 'score'}, 
+             'shalla': {'path': '../data/shalla_combined.csv', 'label_name': 'label', 'pos_indicator': 1, 'score_name': 'score'}, 
+             'caida': {'path': '../data/backup/caida.csv', 'label_name': 'Label', 'pos_indicator': 1, 'score_name': 'score'}}
 
 for i, dataset in enumerate(filepaths):
     df = pd.read_csv(filepaths[dataset]['path'])
@@ -28,5 +29,5 @@ for i, dataset in enumerate(filepaths):
     axs[i].set_xticks([0.25, 0.5, 0.75, 1])
     
 fig.legend(['Non-keys', 'Keys'], loc="outside center right")
-plt.savefig('figures/combined_score_distributions.pdf')
+plt.savefig('../results/figures/combined_score_distributions.pdf')
 plt.clf()

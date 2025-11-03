@@ -126,7 +126,7 @@ def plot_fpr_space_tradeoff(learned_filename: str, adaptive_filename: str, num_q
                         math.pow(10, math.ceil(math.log10(overall_max))))
         # label and save the data
         fig.legend(loc='outside center right')
-        plt.savefig(f'figures/combined_fpr_{query_dist}_{query_num/1000000 if query_dist != "onepass" else ""}M.pdf')
+        plt.savefig(f'../results/figures/combined_fpr_{query_dist}_{query_num/1000000 if query_dist != "onepass" else ""}M.pdf')
         plt.clf()
 
 def plot_model_degradation(learned_filename: str, size=None):
@@ -172,7 +172,7 @@ def plot_model_degradation(learned_filename: str, size=None):
             axs[current_count].set_yticks([0.0001, 0.001, 0.01, 0.1])
         current_count += 1
     fig.legend(loc='outside center right')
-    plt.savefig(f'figures/combined_degrad_10M_.pdf')
+    plt.savefig(f'../results/figures/combined_degrad_10M_.pdf')
     plt.clf()
 
 ADVERSARIAL_SIZES = {"url": 77672, "ember": 606338, "shalla": 4807488, "caida": 2408635}
@@ -252,7 +252,7 @@ def plot_adversarial(learned_filename: str, adaptive_filename: str, learned_filt
                     math.pow(10, math.ceil(math.log10(overall_max))))
     # plt.title(f'Adversarial Query FPR-Space Tradeoff on {dataset} ({num_queries / 1000000}M Queries)')
     fig.legend(loc="outside center right")
-    plt.savefig(f'figures/combined_fpr_adversarial_{num_queries/1000000}M.pdf')
+    plt.savefig(f'../results/figures/combined_fpr_adversarial_{num_queries/1000000}M.pdf')
     plt.clf()
     
 construction_sizes = {"url": 69160, "ember": 539890, "shalla": 4280640, "caida": 2144675}
@@ -308,11 +308,7 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, learn
                 (adaptive_df['size'] == construction_sizes[dataset])
         ]
         if len(adaptive_data) != 0:
-<<<<<<< HEAD
-            bar = {'Filter Inserts': median(adaptive_df['insert_time']), 'Reverse Map Updates': median(adaptive_df['map_time']) * dataset_pos[dataset]}
-=======
-            bar = {'Filter Inserts': median(adaptive_df['insert_time']) + median(adaptive_df['alloc_time']), 'Reverse Map Updates': median(adaptive_df['amortized_map_insert']) * dataset_pos[dataset]}
->>>>>>> b3c79e3ff3c6270405208edebdf97ed34fb87616
+            bar = {'Filter Inserts': median(adaptive_data['insert_time']), 'Reverse Map Updates': median(adaptive_data['amortized_adapt'])}
             adaptive_bar_heights = [bar.get(part, 0) for part in all_categories]  
             adaptive_total_height = sum(adaptive_bar_heights)
             adaptive_bar_prop = [part / adaptive_total_height for part in adaptive_bar_heights]
@@ -355,7 +351,7 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, learn
             label.set_fontsize('x-small')
         current_count += 1
     fig.legend(loc="upper center", ncol=len(all_categories), bbox_to_anchor=(0.5, 1.25), fontsize='medium', handlelength=1)
-    plt.savefig(f'figures/combined_const_with_prop.pdf', bbox_inches='tight')
+    plt.savefig(f'../results/figures/combined_const_with_prop.pdf', bbox_inches='tight')
     plt.clf()
 
 def plot_query_times(learned_filename: str, adaptive_filename: str):
@@ -382,9 +378,6 @@ def plot_query_times(learned_filename: str, adaptive_filename: str):
             plbf_bar_heights = [bar.get(part, 0) for part in all_categories]
             plbf_total_height = sum(plbf_bar_heights)
             plbf_bar_prop = [part / plbf_total_height for part in plbf_bar_heights]
-        # else:
-        #     print("couldn't find data for plbf on ", dataset)
-        #     exit(1)
         adabf_data = plbf_df[
                 (plbf_df['dataset'] == dataset) &
                 (plbf_df['bytes'] == construction_sizes[dataset]) & 
@@ -420,11 +413,6 @@ def plot_query_times(learned_filename: str, adaptive_filename: str):
 
     # now for the overall query times, need to keep the order of the datasets
     # and keep track of the bar heights across datasets
-    x = np.arange(len(construction_sizes))
-    plbf_heights = [dataset_results[dataset]['plbf']['height'] for dataset in construction_sizes]
-    adabf_heights = [dataset_results[dataset]['adabf']['height'] for dataset in construction_sizes]
-    adaptive_heights = [dataset_results[dataset]['adaptiveqf']['height'] for dataset in construction_sizes]
-
     fig, axs = plt.subplots(1, 4, figsize=(5, 2), layout='constrained')
     fig.set_constrained_layout_pads(w_pad=0.001, h_pad=0.05, wspace=0.05, hspace=0.1)
     axs[0].set_ylabel('Amort. Query Time (ms)')
@@ -457,7 +445,7 @@ def plot_query_times(learned_filename: str, adaptive_filename: str):
             label.set_fontsize('x-small')
         current_count += 1
     fig.legend(loc="upper center", ncol=len(all_categories), bbox_to_anchor=(0.5, 1.25), fontsize='medium', handlelength=1)
-    plt.savefig(f'figures/combined_query_with_prop.pdf', bbox_inches='tight')
+    plt.savefig(f'../results/figures/combined_query_with_prop.pdf', bbox_inches='tight')
     plt.clf()
 
 def plot_changing_model_exp(learned_filepath):
@@ -509,7 +497,7 @@ def plot_changing_model_exp(learned_filepath):
             axs[current_count].set_yscale('log')
         current_count += 1
     fig.legend(loc="outside center right")
-    plt.savefig(f'figures/combined_changing_model.pdf')
+    plt.savefig(f'../results/figures/combined_changing_model.pdf')
     plt.clf()
 
 dynamic_filter_sizes = {"ember": 539890}
@@ -577,20 +565,20 @@ def plot_dynamic_exp(learned_filepath, adaptive_filepath, learned_filters=None, 
         # after processing a dataset, move on to the next subplot
         current_count += 1
     fig.legend(loc='outside center right')
-    plt.savefig(f'figures/{output_name}')
+    plt.savefig(f'../results/figures/{output_name}')
     plt.clf()
 
 
 if __name__ == "__main__":
-    plot_fpr_space_tradeoff('results/overall_results_with_model_scores.csv', '../adaptiveqf/results/aqf_results.csv')
-    plot_adversarial('results/overall_advers_with_model_scores.csv', '../adaptiveqf/results/aqf_advers_results.csv')
-    plot_construction_times('results/results_with_model.csv', '../adaptiveqf/results/aqf_results.csv')
-    plot_query_times('results/results_with_model.csv', '../adaptiveqf/results/aqf_results.csv')
-    plot_model_degradation('results/degrad_results_with_model_scores.csv')
-    plot_changing_model_exp('results/changing_model_size.csv')
-    plot_dynamic_exp('results/dynamic_results_with_model_scores.csv', '../adaptiveqf/results/aqf_results_dynamic.csv', 
+    plot_fpr_space_tradeoff('../results/learned/overall_results_with_model_scores.csv', '../results/aqf/aqf_results.csv')
+    plot_adversarial('../results/learned/overall_advers_with_model_scores.csv', '../results/aqf/aqf_advers_results.csv')
+    plot_construction_times('../results/learned/results_with_model.csv', '../results/aqf/aqf_results.csv')
+    plot_query_times('../results/learned/results_with_model.csv', '../results/aqf/aqf_results.csv')
+    plot_model_degradation('../results/learned/degrad_results_with_model_scores.csv')
+    plot_changing_model_exp('../results/learned/changing_model_size.csv')
+    plot_dynamic_exp('../results/learned/dynamic_results_with_model_scores.csv', '../results/aqf/aqf_results_dynamic.csv', 
                      learned_filters=["plbf", "adabf"], unique_datasets=["url", "ember", "caida"],
-                     output_name="combined_fpr_dynamic.pdf")
-    plot_dynamic_exp('results/dynamic_results_with_model_rebuild.csv', '../adaptiveqf/results/aqf_results_dynamic.csv', 
+                     output_name="../results/figures/combined_fpr_dynamic.pdf")
+    plot_dynamic_exp('../results/learned/dynamic_results_with_model_rebuild.csv', '../results/aqf/aqf_results_dynamic.csv', 
                      learned_filters=["plbf", "adabf"], unique_datasets=["url", "ember", "caida"],
-                     output_name="combined_fpr_dynamic_rebuild.pdf")
+                     output_name="../results/figures/combined_fpr_dynamic_rebuild.pdf")

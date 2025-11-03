@@ -26,49 +26,6 @@ uint64_t hash_str(char *str) {
 	return hash;
 }
 
-// Obtains the number of queries and inserts associated with the file (defining the number of queries for a one-pass test)
-int read_line_counts(char* filename, int label_index, int obj_index, size_t *num_queries, size_t *num_inserts) {
-	FILE * file_ptr;
-	file_ptr = fopen(filename, "r");
-	if (NULL == file_ptr) {
-		printf("file can't be opened \n");
-		return EXIT_FAILURE;
-	}
-	int line_count = 0;
-	int insert_count = 0;
-	char buffer[256];
-	printf(fgets(buffer, 256, file_ptr)); // get rid of the first line, which is just the column names
-	while (fgets(buffer, 256, file_ptr) != NULL) {
-		line_count += 1;
-		char *label = NULL;
-		char *token;
-		int count = 0;
-		token = strtok(buffer, ",");
-		while (token != NULL) {
-			count++;
-			if (count == label_index) {
-				label = token;
-				if (strcmp(filename,"datasets/malicious_url_scores.csv") == 0) {
-					// here they're labeled as benign/malicious instead of 0 or 1. We say malicious elements should be inserted into the filter.
-					if (strcmp(label,"malicious") == 0) {
-						insert_count++;
-					}
-				} else {
-					if (atoi(label) == 1) {
-						insert_count++;
-					}
-				}
-			} 
-			token = strtok(NULL, ",");
-		}
-	}
-	printf("finished reading queries\n");
-	*num_inserts = insert_count;
-	*num_queries = line_count;
-	fclose(file_ptr);
-	return EXIT_SUCCESS;
-}
-
 int main(int argc, char **argv)
 {
 	int num_trials = 3;
@@ -87,20 +44,23 @@ int main(int argc, char **argv)
 	char* dataset = get_dataset_name(filename);
 	char* dist = "onepass";
 
+	// First we go into the file and collect all of the insertions from the dataset,
+	// building a query set at the same time.
+
 	FILE * file_ptr;
 	file_ptr = fopen(filename, "r");
 	long *offsets = malloc(sizeof(long) * MAX_DATA_LINES);
-
 	if (NULL == file_ptr) {
 		printf("file can't be opened \n");
 		return EXIT_FAILURE;
 	}
-
-	// First we go into the file and collect all of the insertions from the dataset,
-	// building a query set at the same time.
 	int num_inserts = 0;
 	int current_index = 0;
 	uint64_t *insert_set = malloc(MAX_DATA_LINES * sizeof(uint64_t));
+	if (!insert_set) {
+		printf("malloc insert_set failed");
+		return EXIT_FAILURE;
+	}
 	uint64_t *query_set = malloc(MAX_DATA_LINES * sizeof(uint64_t));
 	if (!query_set) {
 		fprintf(stderr, "malloc failed for query_set\n");
@@ -110,10 +70,6 @@ int main(int argc, char **argv)
 	if (!query_labels) {
 		fprintf(stderr, "malloc failed for query_labels\n");
 		return 1;
-	}
-	if (!insert_set) {
-		printf("malloc insert_set failed");
-		return EXIT_FAILURE;
 	}
 	if (RAND_bytes((unsigned char*)insert_set, MAX_DATA_LINES * sizeof(uint64_t)) != 1) {
 		printf("RAND_bytes failed\n");
@@ -141,7 +97,7 @@ int main(int argc, char **argv)
 		}
 		// now, depending on the label, determine if it should be inserted or not
 		// regardless, update the query set
-		if (strcmp(filename,"../learned/data/malicious_url_scores.csv") == 0) {
+		if (strcmp(filename,"../data/malicious_url_scores.csv") == 0) {
 			// here they're labeled as benign/malicious instead of 0 or 1. We say malicious == 1.
 			if (label != NULL) {
 				char *item_copy = strdup(item);
@@ -173,7 +129,7 @@ int main(int argc, char **argv)
 	// current_index describes the number of lines in the file,
 	// which is also the number of queries for a one-pass test
 
-	// create a timer
+	QF qf;
 	struct timeval timecheck;
 	
 	for (int i = 0; i < num_trials; i++) {
@@ -185,7 +141,6 @@ int main(int argc, char **argv)
 		// create the filter
 		uint64_t nhashbits = qbits + rbits;
 		uint64_t nslots = (1ULL << qbits);
-		QF qf;
 		
 		gettimeofday(&timecheck, NULL);
 		uint64_t start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec, end_time;
