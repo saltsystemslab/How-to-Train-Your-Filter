@@ -9,3 +9,4 @@ results/learned/*
 !results/learned/.gitkeep
 results/aqf/*
 !results/aqf/.gitkeep
+.vscode
