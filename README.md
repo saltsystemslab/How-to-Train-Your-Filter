@@ -7,14 +7,18 @@ This repository contains a compilation of implementations for **[Ada-BF](https:/
 ## Requirements
 To prepare the **AdaptiveQF**, you first need to have [SplinterDB](https://splinterdb.org/) set up in the `adaptiveqf/external` folder. Then, run `make` to create the necessary executables.
 
-The datasets **can be directly found as compressed files in the `data/compressed/`** folder. When decompressed, they should be placed in the `data/` folder.
+The datasets **can be directly found as compressed files in the `data/compressed/`** folder. When decompressed, they should be placed in the `data/` folder as:
+- `url.tar.gz` => `malicious_url_scores.csv`
+- `ember.tar.gz` => `combined_ember_metadata.csv`
+- `caida.tar.gz` => `caida.csv`
+- `shalla.tar.gz` => `shalla_combined.csv`
 
 <details>
 <summary>Manually downloading and processing the datasets can also be done by using the instructions in this section.</summary>
 
 - [Malicious URLs](https://www.kaggle.com/datasets/sid321axn/malicious-urls-dataset): This dataset just needs to be downloaded and stored in `data/` as `malicious_url_scores.csv`.
 - [Ember](https://github.com/elastic/ember): First, the Ember project needs to be cloned into `learned/ember_import`. Then, unlabelled rows from the dataset should be removed using `learned/utils/eliminate_unlabelled_ember.py`. The cleaned dataset should be stored in `data/` as `combined_ember_metadata.csv`.
-- [Shalla](): Since the dataset was discontinued, the link directs to a folder where the dataset we used can be downloaded. After downloading the Shalla dataset, the [Cisco Top 1M Domain](https://s3-us-west-1.amazonaws.com/umbrella-static/index.html) dataset should be downloaded. Then, `learned/utils/process_shalla.py` will combine the two into a combined dataset of malicious and popular websites. The result should be stored in `data/` as `shalla_combined.csv`.
+- [Shalla](data/compressed/): Since the dataset was discontinued, the link directs to a folder where the original data `shalla_original.tar.gz` can be found (`shalla.tar.gz` gives the direct data we used without needing any additional processing). After downloading the Shalla dataset, the [Cisco Top 1M Domain](https://s3-us-west-1.amazonaws.com/umbrella-static/index.html) dataset should be downloaded. Then, `learned/utils/process_shalla.py` will combine the two into a combined dataset of malicious and popular websites. The result should be stored in `data/` as `shalla_combined.csv`.
 - [Caida](https://www.caida.org/catalog/datasets/passive_dataset/): The `learned/utils/caida_vectorizer.py` creates a simplified version of the Caida dataset. The result should be stored in `data/` as `caida.csv`.
 </details>
 
