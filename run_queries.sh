@@ -42,26 +42,26 @@ for dataset in "${!dataset_paths[@]}"; do
         fi
         # now, go through each learned filter and run the same tests
         # use the python script to get the correct size for the q and r values
-        cd ../"$LEARNED_DIR"
-        filter_size=$(python3 utils/obtain_filter_size.py --dataset "$dataset" --path "../results/aqf/aqf_results.csv" --q "$q" --r "$r")
-        echo "size for $dataset $q $r: $filter_size"
-        echo "rerunning all learned filter tests in the background..."
-        # one-pass test
-        python3 run_exp_with_model_prescores.py --datasets "$dataset" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model > "../logs/one_pass_learned_$dataset_$q_$r.txt" 2>&1 &
-        # uniform (+ adversarial) test
-        python3 run_exp_with_model_prescores.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model --adv > "../logs/uniform_adaptive_$dataset_$q_$r.txt" 2>&1 &
-        # Zipfian test
-        python3 run_exp_with_model_prescores.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_zipf_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model > "../logs/zipfian_learned_$dataset_$q_$r.txt" 2>&1 &
-        if [ "$r" -eq 5 ]; then
-            # timing test
-            python3 run_exp_with_model.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model > "../logs/timing_learned_$dataset_$q_$r.txt" 2>&1 &
-            # dynamic tests
-            python3 run_exp_dynamic_with_model_rebuild.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "1" --new_model > "../logs/dynamic_learned_rebuild_$dataset_$q_$r.txt" 2>&1 &
-            python3 run_exp_dynamic_with_prescores.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "1" --new_model > "../logs/dynamic_learned_$dataset_$q_$r.txt" 2>&1 &
-            # training set proportion test
-            python3 run_exp_model_degrad.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model > "../logs/degrad_learned_$dataset_$q_$r.txt" 2>&1 &
-        fi
-        cd ../"$ADAPTIVE_DIR"
+        # cd ../"$LEARNED_DIR"
+        # filter_size=$(python3 utils/obtain_filter_size.py --dataset "$dataset" --path "../results/aqf/aqf_results.csv" --q "$q" --r "$r")
+        # echo "size for $dataset $q $r: $filter_size"
+        # echo "rerunning all learned filter tests in the background..."
+        # # one-pass test
+        # python3 run_exp_with_model_prescores.py --datasets "$dataset" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model > "../logs/one_pass_learned_$dataset_$q_$r.txt" 2>&1 &
+        # # uniform (+ adversarial) test
+        # python3 run_exp_with_model_prescores.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model --adv > "../logs/uniform_adaptive_$dataset_$q_$r.txt" 2>&1 &
+        # # Zipfian test
+        # python3 run_exp_with_model_prescores.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_zipf_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model > "../logs/zipfian_learned_$dataset_$q_$r.txt" 2>&1 &
+        # if [ "$r" -eq 5 ]; then
+        #     # timing test
+        #     python3 run_exp_with_model.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model > "../logs/timing_learned_$dataset_$q_$r.txt" 2>&1 &
+        #     # dynamic tests
+        #     python3 run_exp_dynamic_with_model_rebuild.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "1" --new_model > "../logs/dynamic_learned_rebuild_$dataset_$q_$r.txt" 2>&1 &
+        #     python3 run_exp_dynamic_with_prescores.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "1" --new_model > "../logs/dynamic_learned_$dataset_$q_$r.txt" 2>&1 &
+        #     # training set proportion test
+        #     python3 run_exp_model_degrad.py --datasets "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --N "1000" --k "5" --M "$filter_size" --filters "plbf" "adabf" --trials "3" --new_model > "../logs/degrad_learned_$dataset_$q_$r.txt" 2>&1 &
+        # fi
+        # cd ../"$ADAPTIVE_DIR"
     done
     # the model proportion test is independent of adaptive filter size but dependent on the dataset
     cd ../"$LEARNED_DIR"

@@ -24,8 +24,6 @@
 #define EMBER_PATH "../data/combined_ember_metadata.csv"
 #define SHALLA_PATH "../data/shalla_combined.csv"
 #define CAIDA_PATH "../data/caida.csv"
-#define DATASETS {"url", "ember", "caida", "shalla"}
-#define NUM_DATASETS 4
 
 // Inserts an element into the hash set reverse map.
 int set_insert(set_node *set, int set_len, uint64_t key, uint64_t value) {
@@ -234,12 +232,13 @@ int get_label_index(char *filename) {
 
 // For the given (data) file, returns a file name to use for convenient output.
 char* get_dataset_name(char *filename) {
-	char** datasets = DATASETS;
-	for (int i = 0; i < NUM_DATASETS; i++) {
+	char* datasets[] = {"url", "ember", "caida", "shalla"};	
+	for (int i = 0; i < 4; i++) {
 		if (strstr(filename, datasets[i]) != NULL) {
 			return datasets[i];
 		}
 	}
+	return NULL;
 }
 
 // For the given (query) file, returns a convenient name describing the distribution that the queries follow.

@@ -16,6 +16,8 @@
 
 #define MAX_DATA_LINES 10000000
 #define MAX_LINE_LENGTH 2048
+#define READ_SIZE 4096
+#define URL_PATH "../data/malicious_url_scores.csv"
 
 uint64_t hash_str(char *str) {
 	uint64_t hash = 5381;
@@ -54,8 +56,6 @@ int main(int argc, char **argv)
 		printf("file can't be opened \n");
 		return EXIT_FAILURE;
 	}
-	int num_inserts = 0;
-	int current_index = 0;
 	uint64_t *insert_set = malloc(MAX_DATA_LINES * sizeof(uint64_t));
 	if (!insert_set) {
 		printf("malloc insert_set failed");
@@ -76,52 +76,66 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	if (verbose) printf("Processing insertions\n");
-	char buffer[256];
-	fgets(buffer, 256, file_ptr); // get rid of the first row giving column names
-	offsets[current_index] = ftell(file_ptr);
-	while (fgets(buffer, 256, file_ptr)) {
-		// first, obtain the label and item for the current row of the dataset
-		offsets[current_index] = ftell(file_ptr);
-		char *label = NULL;
-		char *item = NULL;
-		char *token = strtok(buffer, ",");
-		int count = 0;
-		while (token != NULL) {
-			count++;
-			if (count == label_index) {
-				label = token;
-			} else if (count == obj_index) {
-				item = token;
-			}
-			token = strtok(NULL, ",");
+	char* buffer = malloc(READ_SIZE);
+	int curr_inserts = 0;
+	int curr_index = 0;
+	fgets(buffer, READ_SIZE, file_ptr); // get rid of the first header row
+	offsets[curr_index] = ftell(file_ptr);
+	while (fgets(buffer, READ_SIZE, file_ptr)) {
+		if (strlen(buffer) == 0) {
+			continue; // skip blank lines
 		}
-		// now, depending on the label, determine if it should be inserted or not
-		// regardless, update the query set
-		if (strcmp(filename,"../data/malicious_url_scores.csv") == 0) {
-			// here they're labeled as benign/malicious instead of 0 or 1. We say malicious == 1.
-			if (label != NULL) {
-				char *item_copy = strdup(item);
-				query_labels[current_index] = strcmp(label, "malicious") ? 1 : 0;
-				if (query_labels[current_index] == 1) {
-					insert_set[num_inserts] = hash_str(item_copy);
-					num_inserts++;
+		if (strcmp(filename, URL_PATH) == 0) {
+			query_labels[curr_index] = strstr(buffer, ",malicious,") ? 1 : 0;
+			char *url;
+			if (strstr(buffer, ",malicious,")) {
+				if (buffer[0] == "\"") {
+					// if the first character is a ", it means that the element is a weirdly-formatted url
+					int url_index = 1;
+					while (buffer[url_index] != "\"") url_index++;
+					// the url will be the substring from index 1 to url_index
+					strncpy(url, buffer + 1, url_index-1);
+				} else {
+					// otherwise, simply dividing the str with "," gives the url
+					url = strtok(buffer, ",");
 				}
-				query_set[current_index] = hash_str(item_copy);
+				if (url != NULL) {
+					insert_set[curr_inserts++] = hash_str(url);
+				}
+			} else {
+				url = strtok(buffer, ",");
 			}
+			query_set[curr_index] = hash_str(url);
 		} else {
-			if (label != NULL) {
-				char *item_copy = strdup(item);
-				query_labels[current_index] = atoi(label);
-				if (query_labels[current_index] == 1) {
-					insert_set[num_inserts] = hash_str(item_copy);
-					num_inserts++;
+			// normally formatted with 1 as a positive indicator
+			// read label and item then insert as necessary
+			char *label = NULL;
+			char *item = NULL;
+			char *token = strtok(buffer, ",");
+			int count = 0;
+			while (token != NULL) {
+				if (count == label_index) {
+					label = token;
+				} else if (count == obj_index) {
+					item = token;
 				}
-				query_set[current_index] = hash_str(item_copy);
+				token = strtok(NULL, ",");
+				count++;
 			}
+			char *item_copy = strdup(item);
+			if (label != NULL && atoi(label) == 1) {
+				insert_set[curr_inserts++] = hash_str(item_copy);
+				query_labels[curr_index] = 1;
+			} else {
+				query_labels[curr_index] = 0;
+			}
+			query_set[curr_index] = hash_str(item_copy);
 		}
-		current_index += 1;
+		curr_index++;
+		offsets[curr_index] = ftell(file_ptr);
 	}
-	if (verbose) fprintf(stderr, "finished reading insertions and queries\n");
+	fclose(file_ptr);
+	if (verbose) fprintf(stderr, "finished reading %d insertions and %d queries\n", curr_inserts, curr_index);
 
 	// At this point, we now have a large list of insertions,
 	// and a list of file offsets corresponding to indices.
@@ -156,7 +170,7 @@ int main(int argc, char **argv)
 		// create the reverse map
 		gettimeofday(&timecheck, NULL);
 		start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
-		set_node *set = calloc(num_inserts, sizeof(set_node));
+		set_node *set = calloc(MAX_DATA_LINES, sizeof(set_node));
 		gettimeofday(&timecheck, NULL);
 		end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
 		uint64_t set_alloc_time = end_time - start_time;
@@ -165,9 +179,9 @@ int main(int argc, char **argv)
 		uint64_t total_filter_insert_time = 0;
 		uint64_t total_set_insert_time = 0;
 		uint64_t filter_insert_time, set_insert_time;
-		for (int j = 0; j < num_inserts; j++) {
+		for (int j = 0; j < curr_inserts; j++) {
 			insert_set[j] = MurmurHash64A(&insert_set[j], sizeof(insert_set[j]), murmur_seed);
-			int result = insert_key(&qf, set, num_inserts, insert_set[j], 1, &timecheck, &filter_insert_time, &set_insert_time);
+			int result = insert_key(&qf, set, curr_inserts, insert_set[j], 1, &timecheck, &filter_insert_time, &set_insert_time);
 			total_filter_insert_time += filter_insert_time;
 			total_set_insert_time += set_insert_time;
 			if (!result) {
@@ -175,7 +189,7 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 		}
-		if (verbose) fprintf(stderr, "finished %d insertions\n", num_inserts);
+		if (verbose) fprintf(stderr, "finished %d insertions\n", curr_inserts);
 
 		// perform queries
 		uint64_t ret_index, ret_hash, result;
@@ -184,8 +198,8 @@ int main(int argc, char **argv)
 		int fp_count = 0;
 		uint64_t total_query_time = 0;
 		uint64_t total_adapt_time = 0;
-		if (verbose) printf("Performing %d queries\n", current_index);
-		for (int j = 0; j < current_index; j++) {
+		if (verbose) printf("Performing %d queries\n", curr_index);
+		for (int j = 0; j < curr_index; j++) {
 			query_set[j] = MurmurHash64A(&query_set[j], sizeof(query_set[j]), murmur_seed);
 			gettimeofday(&timecheck, NULL);
 			start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
@@ -194,8 +208,8 @@ int main(int argc, char **argv)
 			end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
 			total_query_time += end_time - start_time;
 			if (result) {
-				uint64_t temp = ret_hash | (1ull << ret_hash_len), orig_key = 0;
-				set_query(set, num_inserts, temp, &orig_key);
+				uint64_t temp = ret_hash, orig_key = 0;
+				set_query(set, curr_inserts, ret_hash, &orig_key);
 
 				if (query_labels[j] == 0) {
 					fp_count++;
@@ -204,12 +218,12 @@ int main(int argc, char **argv)
 						start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
 						ret_hash_len = qf_adapt(&qf, ret_index, orig_key, query_set[j], &ret_hash, QF_KEY_IS_HASH | QF_NO_LOCK);
 						if (ret_hash_len > 0) {
-							int ret = set_delete(set, num_inserts, temp);
+							int ret = set_delete(set, curr_inserts, temp);
 							if (ret == 0) {
 								printf("%d\n", j);
 								abort();
 							}
-							set_insert(set, num_inserts, ret_hash | (1ull << ret_hash_len), orig_key);
+							set_insert(set, curr_inserts, ret_hash, orig_key);
 							gettimeofday(&timecheck, NULL);
 							end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
 							total_adapt_time += end_time - start_time;
@@ -225,14 +239,14 @@ int main(int argc, char **argv)
 		}
 
 		// calculate the false positive rate
-		int total_negatives = current_index - num_inserts;
+		int total_negatives = curr_index - curr_inserts;
 		if (verbose) printf("Total false positives in query set: %d\n", fp_count);
 		double fpr = (double)fp_count / (fp_count + total_negatives);
 		if (verbose) printf("False positive rate: %f\n", fpr);
 
 
 		FILE * outputptr;
-		outputptr = fopen("results/aqf_results.csv", "a");
+		outputptr = fopen("../results/aqf/aqf_results.csv", "a");
 		fseek(outputptr, 0, SEEK_END);
 		long filesize = ftell(outputptr);
 		if (filesize == 0) {
@@ -242,14 +256,14 @@ int main(int argc, char **argv)
 
 		char new_result_row[512];
 		snprintf(new_result_row, sizeof(new_result_row), "%s,%s,%d,%ld,%ld,%ld,%.14f,%ld,%ld,%.14f,%.14f\n",
-				dataset, dist, current_index, qbits, rbits, qf.metadata->total_size_in_bytes, fpr,
+				dataset, dist, curr_index, qbits, rbits, qf.metadata->total_size_in_bytes, fpr,
 				total_filter_insert_time + filter_alloc_time, total_set_insert_time + set_alloc_time,
-				(double)total_query_time/current_index,(double)total_adapt_time/current_index);
+				(double)total_query_time/curr_index,(double)total_adapt_time/curr_index);
 
 		fprintf(outputptr, new_result_row);
 		fclose(outputptr);
 		
-		set_free(set, num_inserts);
+		set_free(set, curr_inserts);
 		qf_free(&qf);
 	}
 	free(query_set);

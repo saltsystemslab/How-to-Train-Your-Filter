@@ -30,7 +30,6 @@ int main(int argc, char **argv)
 	int num_trials = 3;
 	int verbose = 1;
 	char indexfilename[512];
-	// int usingIndex = 0;
 	if (argc < 6) {
 		fprintf(stderr, "Please specify \nthe file path [eg. datasets/Malware_data.csv]\nthe index file path [eg. datasets/hashed_unif_10M_url.csv]\nthe number of queries [eg. 100000000]\nthe log of the number of slots in the QF [eg. 20]\nthe number of remainder bits in the QF [eg. 9]\n");
 		exit(1);
@@ -169,10 +168,10 @@ int main(int argc, char **argv)
 			uint64_t total_adapt_time = 0;
 			int num_learn = num_queries / 2; // how many queries to use for learning false positives
 			int num_adv_learned = 0; // how many false positives were learned
-			uint64_t *adv_list = malloc(num_queries * sizeof(uint64_t)); //the list of learned false positives
+			uint64_t *adv_list = malloc(num_queries * sizeof(uint64_t)); // the list of learned false positives
 			int num_between_adv = (int)(num_queries/2)/(freq*num_queries);
-			int current_adv_check = 0;
-			int current_adv_count = 0;
+			int current_adv_check = 0; // counter for checking if we should do the adversarial replacement
+			int current_adv_count = 0; // tracks which adversarial query we should use as the next replacement
 			uint64_t query;
 			fprintf(stderr, "started %ld queries with freq %.1f\n", num_queries, freq);
 			for (int j = 0; j < num_queries; j++) {
@@ -196,8 +195,8 @@ int main(int argc, char **argv)
 				end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
 				total_query_time += end_time - start_time;
 				if (result) {
-					uint64_t temp = ret_hash | (1ull << ret_hash_len), orig_key = 0;
-					set_query(set, num_inserts, temp, &orig_key);
+					uint64_t temp = ret_hash, orig_key = 0;
+					set_query(set, num_inserts, ret_hash, &orig_key);
 
 					if (query != orig_key) {
 						fp_count++;
@@ -216,7 +215,7 @@ int main(int argc, char **argv)
 									printf("%d\n", i);
 									abort();
 								}
-								set_insert(set, num_inserts, ret_hash | (1ull << ret_hash_len), orig_key);
+								set_insert(set, num_inserts, ret_hash, orig_key);
 								gettimeofday(&timecheck, NULL);
 								end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
 								total_adapt_time += end_time - start_time;
