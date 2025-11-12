@@ -136,6 +136,7 @@ int insert_key(QF *qf, set_node *set, uint64_t set_len, uint64_t key, int count,
 	gettimeofday(timecheck, NULL);
 	start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
 	int ret = qf_insert_ret(qf, key, count, &ret_index, &ret_hash, &ret_hash_len, QF_NO_LOCK | QF_KEY_IS_HASH);
+	ret_hash += (ret_hash == 0) ? 1 : 0; // TODO : this is super sus!!!
 	gettimeofday(timecheck, NULL);
 	end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
 	total_filter_time += end_time - start_time;
@@ -144,7 +145,7 @@ int insert_key(QF *qf, set_node *set, uint64_t set_len, uint64_t key, int count,
 	}
 	else if (ret == 0) {
 		// insert didn't occur because the key was already present in the filter (lines 1229-1237 gqf.c)
-		uint64_t fingerprint = ret_hash | (1ull << ret_hash_len), orig_key;
+		uint64_t orig_key;
 		gettimeofday(timecheck, NULL);
 		start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
 		ret = set_query(set, set_len, ret_hash, &orig_key);
@@ -152,7 +153,19 @@ int insert_key(QF *qf, set_node *set, uint64_t set_len, uint64_t key, int count,
 		end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
 		total_set_time += end_time - start_time;
 		if (!ret) {
-			printf("error:\tfilter claimed to have fingerprint %lu but hashtable could not find it\n", ret_hash);
+			fprintf(stderr, "error:\tfilter claimed to have fingerprint %lu but hashtable could not find it\n", ret_hash);
+			if (ret_hash == 0) {
+				// rare case where in an empty filter the empty slot is misidentified
+				gettimeofday(timecheck, NULL);
+				start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+				set_insert(set, set_len, ret_hash, key);
+				gettimeofday(timecheck, NULL);
+				end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+				total_set_time += end_time - start_time;
+				*filter_time = total_filter_time;
+				*set_time = total_set_time;
+				return 1;
+			}
 			return 0;
         }
 		if (key != orig_key) {
