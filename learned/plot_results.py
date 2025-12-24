@@ -67,9 +67,9 @@ def plot_fpr_space_tradeoff(learned_filename: str, adaptive_filename: str, num_q
                     data_for_num_queries = data_for_dataset[data_for_dataset['num_queries'] == query_num]
                     data_for_query_dist = data_for_num_queries[data_for_num_queries['query_dist'] == query_dist]
                     data_for_filter = data_for_query_dist[data_for_query_dist['filter'] == filter]
-                    if len(data_for_filter) == 0:
-                        print(f"No data found for {filter}-{dataset}-{size}...")
-                        continue
+                    # if len(data_for_filter) == 0:
+                    #     print(f"No data found for {filter}-{dataset}-{size}...")
+                    #     continue
                     # now for each filter size, get the median, min, and max 
                     sizes = []
                     meds = []

@@ -20,6 +20,7 @@
 #include "include/exp_utility.h"
 
 #define READ_SIZE 4096
+#define URL_SIZE 1024
 #define URL_PATH "../data/malicious_url_scores.csv"
 #define EMBER_PATH "../data/combined_ember_metadata.csv"
 #define SHALLA_PATH "../data/shalla_combined.csv"
@@ -278,18 +279,21 @@ int read_file(char *filename, int obj_index, int label_index, char *buffer, long
 	fgets(buffer, READ_SIZE, file_ptr); // get rid of the first header row
 	offsets[curr_index] = ftell(file_ptr);
 	while (fgets(buffer, READ_SIZE, file_ptr)) {
-		if (strlen(buffer) == 0) {
+		if (strlen(buffer) <= 1) {
 			continue; // skip blank lines
 		}
 		if (strcmp(filename, URL_PATH) == 0) {
 			if (strstr(buffer, ",malicious,")) {
 				char *url;
-				if (buffer[0] == "\"") {
-					// if the first character is a ", it means that the element is a weirdly-formatted url
+				if (buffer[0] == '"') {
+					char url[URL_SIZE];
 					int url_index = 1;
-					while (buffer[url_index] != "\"") url_index++;
-					// the url will be the substring from index 1 to url_index
+					while (buffer[url_index] != '"') url_index++;
 					strncpy(url, buffer + 1, url_index-1);
+					url[url_index-1] = '\0';
+					if (strlen(url) > 0) {
+						insert_set[curr_inserts++] = hash_str(url);
+					}
 				} else {
 					// otherwise, simply dividing the str with "," gives the url
 					url = strtok(buffer, ",");
@@ -397,4 +401,18 @@ int read_queries(char *indexfilename, char *filename, int obj_index, int label_i
 	fclose(index_file_ptr);
 	fclose(file_ptr);
 	return 1;
+}
+
+uint64_t get_aqf_size(QF *qf) {
+	return qf->metadata->total_size_in_bytes;
+}
+
+QF build_aqf(uint64_t nslots, uint64_t nhashbits) {
+	QF qf;
+	if (!qf_malloc(&qf, nslots, nhashbits, 0, QF_HASH_INVERTIBLE, 0)) {
+		fprintf(stderr, "Can't allocate AQF.\n");
+		abort();
+	}
+	qf_set_auto_resize(&qf, false);
+	return qf;
 }

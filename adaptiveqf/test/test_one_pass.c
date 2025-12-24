@@ -32,6 +32,7 @@ int main(int argc, char **argv)
 {
 	int num_trials = 3;
 	int verbose = 1;
+	if (verbose) fprintf(stderr, "starting aqf test\n");
 	if (argc < 4) {
 		fprintf(stderr, "Please specify \nthe file path [eg. datasets/Malware_data.csv]\nthe log of the number of slots in the QF [eg. 20]\nthe number of remainder bits in the QF [eg. 9]\n");
 		exit(1);
@@ -51,21 +52,25 @@ int main(int argc, char **argv)
 
 	FILE * file_ptr;
 	file_ptr = fopen(filename, "r");
+	if (verbose) fprintf(stderr, "allocating offsets\n");
 	long *offsets = malloc(sizeof(long) * MAX_DATA_LINES);
 	if (NULL == file_ptr) {
 		printf("file can't be opened \n");
 		return EXIT_FAILURE;
 	}
+	if (verbose) fprintf(stderr, "allocating inserts\n");
 	uint64_t *insert_set = malloc(MAX_DATA_LINES * sizeof(uint64_t));
 	if (!insert_set) {
 		printf("malloc insert_set failed");
 		return EXIT_FAILURE;
 	}
+	if (verbose) fprintf(stderr, "allocating query set\n");
 	uint64_t *query_set = malloc(MAX_DATA_LINES * sizeof(uint64_t));
 	if (!query_set) {
 		fprintf(stderr, "malloc failed for query_set\n");
 		return 1;
 	}
+	if (verbose) fprintf(stderr, "allocating query labels\n");
 	uint64_t *query_labels = malloc(MAX_DATA_LINES * sizeof(uint64_t));
 	if (!query_labels) {
 		fprintf(stderr, "malloc failed for query_labels\n");
@@ -76,36 +81,73 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	if (verbose) printf("Processing insertions\n");
-	char* buffer = malloc(READ_SIZE);
+	char* line_buffer = malloc(READ_SIZE); // read individual lines
+	char* buffer = malloc(READ_SIZE * 100);  // larger buffer for multi-line fields
+	buffer[0] = '\0';
+
 	int curr_inserts = 0;
 	int curr_index = 0;
-	fgets(buffer, READ_SIZE, file_ptr); // get rid of the first header row
+	fgets(line_buffer, READ_SIZE, file_ptr); // get rid of the first header row
 	offsets[curr_index] = ftell(file_ptr);
-	while (fgets(buffer, READ_SIZE, file_ptr)) {
-		if (strlen(buffer) == 0) {
+	int line_num = 0;
+	
+	char *url = malloc(READ_SIZE);
+
+	int inside_quotes = 0;
+
+	while (fgets(line_buffer, READ_SIZE, file_ptr)) {
+		strcat(buffer, line_buffer);
+		if (verbose)fprintf(stderr, "%s", line_buffer);
+    
+		// fill the buffer depending on if we're inside quotes
+		for (char *p = buffer; *p; p++) {
+			if (*p == '"') {
+				if (!inside_quotes) {
+					// if we're not in quotes, start tracking it
+					inside_quotes = 1;
+				} else {
+					// if we're in quotes, stop tracking it if the next character is a comma
+					if (*(p+1) == ',') {
+						inside_quotes = 0;
+					}
+				}
+			}
+		}
+		
+		// after the second quote we should be in a complete row
+		if (inside_quotes) {
+			continue;
+		}
+		
+		if (strlen(buffer) <= 1) {
 			continue; // skip blank lines
 		}
+
 		if (strcmp(filename, URL_PATH) == 0) {
 			query_labels[curr_index] = strstr(buffer, ",malicious,") ? 1 : 0;
-			char *url;
 			if (strstr(buffer, ",malicious,")) {
-				if (buffer[0] == "\"") {
+				if (buffer[0] == '"') {
 					// if the first character is a ", it means that the element is a weirdly-formatted url
 					int url_index = 1;
-					while (buffer[url_index] != "\"") url_index++;
+					while (buffer[url_index] != '"') url_index++;
 					// the url will be the substring from index 1 to url_index
 					strncpy(url, buffer + 1, url_index-1);
+					url[url_index-1] = '\0';
 				} else {
 					// otherwise, simply dividing the str with "," gives the url
 					url = strtok(buffer, ",");
 				}
-				if (url != NULL) {
+				if (url != NULL && strlen(url) > 0) {
 					insert_set[curr_inserts++] = hash_str(url);
 				}
 			} else {
 				url = strtok(buffer, ",");
 			}
-			query_set[curr_index] = hash_str(url);
+			if (url != NULL && strlen(url) > 0) {
+				query_set[curr_index] = hash_str(url);
+				curr_index++;
+				offsets[curr_index] = ftell(file_ptr);
+			}
 		} else {
 			// normally formatted with 1 as a positive indicator
 			// read label and item then insert as necessary
@@ -130,12 +172,18 @@ int main(int argc, char **argv)
 				query_labels[curr_index] = 0;
 			}
 			query_set[curr_index] = hash_str(item_copy);
+			curr_index++;
+			offsets[curr_index] = ftell(file_ptr);
 		}
-		curr_index++;
-		offsets[curr_index] = ftell(file_ptr);
+		line_num++;
+		if (verbose)fprintf(stderr, "line_num=%d\n", line_num);
+		buffer[0] = '\0';
 	}
+	free(buffer);
+	free(line_buffer);
 	fclose(file_ptr);
 	if (verbose) fprintf(stderr, "finished reading %d insertions and %d queries\n", curr_inserts, curr_index);
+	printf("\nFinal: line_num=%d, curr_index=%d\n", line_num, curr_index);
 
 	// At this point, we now have a large list of insertions,
 	// and a list of file offsets corresponding to indices.

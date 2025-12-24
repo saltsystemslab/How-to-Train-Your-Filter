@@ -26,6 +26,7 @@ struct _set_node {
 	uint64_t value;
 } typedef set_node;
 
+// Important
 int set_insert(set_node *set, int set_len, uint64_t key, uint64_t value);
 
 int set_query(set_node *set, int set_len, uint64_t key, uint64_t *value);
@@ -36,6 +37,12 @@ int set_free(set_node *set, int set_len);
 
 int insert_key(QF *qf, set_node *set, uint64_t set_len, uint64_t key, int count, struct timeval *timecheck, uint64_t *filter_time, uint64_t *set_time);
 
+uint64_t get_aqf_size(QF *qf);
+
+QF build_aqf(uint64_t nslots, uint64_t nhashbits);
+
+// Used for parsing files
+
 int get_obj_index(char *filename);
 
 int get_label_index(char *filename);
@@ -45,6 +52,7 @@ char* get_dataset_name(char *filename);
 char* get_dist_name(char *filename);
 
 int read_file(char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *insert_set, int *num_inserts);
+
 
 int read_queries(char *indexfilename, char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *query_set, uint64_t *query_labels, int *pos_count, int *query_count);
 

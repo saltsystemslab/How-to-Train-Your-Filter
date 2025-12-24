@@ -20,6 +20,7 @@ make all
 cd ..
 
 r_values=(5 6 7 8 9 10 11)
+
 for dataset in "${!dataset_paths[@]}"; do
     path="${dataset_paths[$dataset]}"
     cd "$LEARNED_DIR"
@@ -28,18 +29,28 @@ for dataset in "${!dataset_paths[@]}"; do
     for r in "${r_values[@]}"; do
         echo "running adaptive one-pass: $dataset $q $r"
         ./test_one_pass "../$path" "$q" "$r" > "../logs/one_pass_adaptive_$q_$r.txt" 2>&1
+        sync
+        sleep 0.5
         echo "running adaptive uniform: $dataset $q $r"
         ./test_distribution "../$path" "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" "$NUM_QUERIES" "$q" "$r" > "../logs/uniform_adaptive_$dataset_$q_$r.txt" 2>&1
+        sync
+        sleep 0.5
         echo "running adaptive zipfian: $dataset $q $r"
         ./test_distribution "../$path" "../data/updated_query_indices/hashed_zipf_10M_$dataset.csv" "$NUM_QUERIES" "$q" "$r" > "../logs/zipfian_adaptive_$dataset_$q_$r.txt" 2>&1
-        if [ "$r" -eq 5 ]; then
+        sync
+        sleep 0.5
+        if [ "$r" -eq 5 ] && [ "$dataset" != "shalla" ]; then
             echo "running adaptive dynamic: $dataset $q $r"
             ./test_dynamic "../$path" "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" "$NUM_QUERIES" "$q" "$r" > "../logs/dynamic_adaptive_$dataset_$q_$r.txt" 2>&1
         fi
+        sync
+        sleep 0.5
         if [ "$r" -eq 6 ]; then
             echo "running adaptive adversarial: $dataset $q $r"
-            ./test_advers_dist "../$path" "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" "$NUM_QUERIES" "$q" "$r" > "../logs/advers_adaptive_$dataset_$q_$r.txt" 2>&1
+            (./test_advers_dist "../$path" "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" "$NUM_QUERIES" "$q" "$r" > "../logs/advers_adaptive_$dataset_$q_$r.txt" 2>&1) || echo "Adversarial test failed, continuing..."
         fi
+        sync
+        sleep 0.5
         # now, go through each learned filter and run the same tests
         # use the python script to get the correct size for the q and r values
         # cd ../"$LEARNED_DIR"
@@ -64,7 +75,7 @@ for dataset in "${!dataset_paths[@]}"; do
         # cd ../"$ADAPTIVE_DIR"
     done
     # the model proportion test is independent of adaptive filter size but dependent on the dataset
-    cd ../"$LEARNED_DIR"
-    python3 run_exp_with_changing_model.py --dataset "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --filters "plbf" "adabf" --trials "3" > "../logs/model_prop_learned_$dataset.txt" 2>&1 &
+    # cd ../"$LEARNED_DIR"
+    # python3 run_exp_with_changing_model.py --dataset "$dataset" --query_path "../data/updated_query_indices/hashed_unif_10M_$dataset.csv" --filters "plbf" "adabf" --trials "3" > "../logs/model_prop_learned_$dataset.txt" 2>&1 &
     cd ..
 done
