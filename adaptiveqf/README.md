@@ -5,7 +5,7 @@
  The main difference from the original code is that the `test` folder contains new scripts for various experiments, while `include/exp_utility.h` and `src/exp_utility.c` define utility functions used during those scripts.
 
  The `external` folder now includes the **[Stacked Filter](https://github.com/kylebd99/StackedFilters)** implementation.
- `StackedFilters/wrapper` contains a C wrapper for **Stacked Filter** allowing it to be used in test scripts very similar to those
+ `StackedFilters/wrapper` contains a C wrapper for the **Stacked Filter** allowing it to be used in test scripts very similar to those
  used by the **AdaptiveQF**.
 
  The main scripts for adaptive filter experiments in the `test` folder include:
@@ -20,7 +20,7 @@
  - `test_advers_dist_stacked.c`
  - `test_dynamic_stacked.c`
  These scripts correspond directly to the adaptive filter experiments, except any logic involving reverse map initialization then adaptive filter queries / adaptations
- are replaced with initialization of the stacked filter using a query sample then stacked filter queries during deployment.
+ is replaced with initialization of the stacked filter using a query sample then stacked filter queries during deployment.
 
  Some utility functions are also included. In particular, `test/write_queries.c` describes how query indices for each dataset are drawn,
  and `src/exp_utility.c` includes helper functions for the test scripts.

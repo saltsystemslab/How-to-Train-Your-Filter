@@ -9,4 +9,8 @@ results/learned/*
 !results/learned/.gitkeep
 results/aqf/*
 !results/aqf/.gitkeep
+results/parameter_search/*
+!results/parameter_search/.gitkeep
+results/stacked/*
+!results/stacked/.gitkeep
 .vscode
