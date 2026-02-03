@@ -19,7 +19,7 @@ perf.*
 stxxl.*
 
 obj/
-external/
+external/splinterdb
 data/
 
 *.bin
