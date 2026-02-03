@@ -1,4 +1,4 @@
-# How to Train Your Filter: When to Adapt or Learn [Experiments & Analysis]
+# How to Train Your Filter: Should You Learn, Stack, or Adapt?
 
 Learned, stacked, and adaptive filters all represent promising advances over traditional filters for approximate membership testing, yet they have not been directly compared against each other. Learned filters achieve competitive space-accuracy trade-offs by leveraging machine learning models, stacked filters use workload knowledge to build cascading filters including
 negative values, while adaptive filters provide theoretically bounded false positive rates (regardless of query distribution) by requiring auxiliary reverse maps. This project presents the first comprehensive comparative evaluation of these three filter paradigms using real-world datasets and diverse query workloads including one-pass, uniform, Zipfian, and adversarial distributions.
