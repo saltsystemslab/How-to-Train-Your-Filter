@@ -19,8 +19,9 @@ perf.*
 stxxl.*
 
 obj/
-external/splinterdb
-external/StackedFilters_copy
+external/splinterdb/
+!external/StackedFilters/
+!external/StackedFilters/**
 data/
 
 *.bin

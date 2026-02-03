@@ -1,0 +1,935 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="StackedFilters"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZipfGraphsDataGenerator">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/ZipfGraphsDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 ZipfGraphsDataGenerator"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZipfGraphsDataGenerator/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/ZipfGraphsDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 ZipfGraphsDataGenerator/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZipfGraphsDataGeneratorDiskVersion">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/ZipfGraphsDataGeneratorDiskVersion" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 ZipfGraphsDataGeneratorDiskVersion"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZipfGraphsDataGeneratorDiskVersion/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/ZipfGraphsDataGeneratorDiskVersion" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 ZipfGraphsDataGeneratorDiskVersion/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="FirehoseDataGenerator">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/FirehoseDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 FirehoseDataGenerator"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="FirehoseDataGenerator/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/FirehoseDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 FirehoseDataGenerator/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="FirehoseDataGeneratorDiskVersion">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/FirehoseDataGeneratorDiskVersion" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 FirehoseDataGeneratorDiskVersion"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="FirehoseDataGeneratorDiskVersion/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/FirehoseDataGeneratorDiskVersion" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 FirehoseDataGeneratorDiskVersion/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="URLBlacklistingDiskVersion">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/URLBlacklistingDiskVersion" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 URLBlacklistingDiskVersion"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="URLBlacklistingDiskVersion/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/URLBlacklistingDiskVersion" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 URLBlacklistingDiskVersion/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZipfDiskVersionAdaptive">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/ZipfDiskVersionAdaptive" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 ZipfDiskVersionAdaptive"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZipfDiskVersionAdaptive/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/ZipfDiskVersionAdaptive" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 ZipfDiskVersionAdaptive/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZipfDiskVersionAdaptiveStages">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/ZipfDiskVersionAdaptiveStages" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 ZipfDiskVersionAdaptiveStages"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZipfDiskVersionAdaptiveStages/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/ZipfDiskVersionAdaptiveStages" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 ZipfDiskVersionAdaptiveStages/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="CQFDataGenerator">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/CQFDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 CQFDataGenerator"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="CQFDataGenerator/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/CQFDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 CQFDataGenerator/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="CuckooDataGenerator">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/CuckooDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 CuckooDataGenerator"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="CuckooDataGenerator/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/CuckooDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 CuckooDataGenerator/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="InsertsDataGenerator">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/InsertsDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 InsertsDataGenerator"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="InsertsDataGenerator/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/InsertsDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 InsertsDataGenerator/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="InsertsDataGenerator2">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/InsertsDataGenerator2" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 InsertsDataGenerator2"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="InsertsDataGenerator2/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/InsertsDataGenerator2" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 InsertsDataGenerator2/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="URLBlacklisting">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/URLBlacklisting" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 URLBlacklisting"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="URLBlacklisting/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/URLBlacklisting" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 URLBlacklisting/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="UniformDataGenerator">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/UniformDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 UniformDataGenerator"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="UniformDataGenerator/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/UniformDataGenerator" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 UniformDataGenerator/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Example">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Example" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 Example"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Example/fast">
+				<Option output="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Example" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/StackedFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/CuckooFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/BloomFilter"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/Optimization"/>
+					<Add directory="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/External/tclap/include"/>
+					<Add directory="/usr/include/c++/10"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/10"/>
+					<Add directory="/usr/include/c++/10/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/10/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 Example/fast"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j12 -f &quot;/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/CQFDataGenerator.cpp">
+			<Option target="CQFDataGenerator"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/CuckooDataGenerator.cpp">
+			<Option target="CuckooDataGenerator"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/Example.cpp">
+			<Option target="Example"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/FirehoseDataGenerator.cpp">
+			<Option target="FirehoseDataGeneratorDiskVersion"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/FirehoseDataGeneratorDiskVersion.cpp">
+			<Option target="FirehoseDataGenerator"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/InsertsDataGenerator.cpp">
+			<Option target="InsertsDataGenerator"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/OneBitAdjustmentDataGenerator.cpp">
+			<Option target="InsertsDataGenerator2"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/URLBlacklisting.cpp">
+			<Option target="URLBlacklisting"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/URULBlacklistingDiskVersion.cpp">
+			<Option target="URLBlacklistingDiskVersion"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/UniformDataGenerator.cpp">
+			<Option target="UniformDataGenerator"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/ZipfDiskVersionAdaptive.cpp">
+			<Option target="ZipfDiskVersionAdaptive"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/ZipfDiskVersionAdaptiveStages.cpp">
+			<Option target="ZipfDiskVersionAdaptiveStages"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/ZipfGraphsDataGenerator.cpp">
+			<Option target="ZipfGraphsDataGenerator"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/Main/ZipfGraphsDataGeneratorDiskVersion.cpp">
+			<Option target="ZipfGraphsDataGeneratorDiskVersion"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter/gqf.cpp">
+			<Option target="ZipfGraphsDataGenerator"/>
+			<Option target="ZipfGraphsDataGeneratorDiskVersion"/>
+			<Option target="FirehoseDataGenerator"/>
+			<Option target="FirehoseDataGeneratorDiskVersion"/>
+			<Option target="URLBlacklistingDiskVersion"/>
+			<Option target="ZipfDiskVersionAdaptive"/>
+			<Option target="ZipfDiskVersionAdaptiveStages"/>
+			<Option target="CQFDataGenerator"/>
+			<Option target="CuckooDataGenerator"/>
+			<Option target="InsertsDataGenerator"/>
+			<Option target="InsertsDataGenerator2"/>
+			<Option target="URLBlacklisting"/>
+			<Option target="UniformDataGenerator"/>
+			<Option target="Example"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter/gqf.h">
+			<Option target="ZipfGraphsDataGenerator"/>
+			<Option target="ZipfGraphsDataGeneratorDiskVersion"/>
+			<Option target="FirehoseDataGenerator"/>
+			<Option target="FirehoseDataGeneratorDiskVersion"/>
+			<Option target="URLBlacklistingDiskVersion"/>
+			<Option target="ZipfDiskVersionAdaptive"/>
+			<Option target="ZipfDiskVersionAdaptiveStages"/>
+			<Option target="CQFDataGenerator"/>
+			<Option target="CuckooDataGenerator"/>
+			<Option target="InsertsDataGenerator"/>
+			<Option target="InsertsDataGenerator2"/>
+			<Option target="URLBlacklisting"/>
+			<Option target="UniformDataGenerator"/>
+			<Option target="Example"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter/partitioned_counter.cpp">
+			<Option target="ZipfGraphsDataGenerator"/>
+			<Option target="ZipfGraphsDataGeneratorDiskVersion"/>
+			<Option target="FirehoseDataGenerator"/>
+			<Option target="FirehoseDataGeneratorDiskVersion"/>
+			<Option target="URLBlacklistingDiskVersion"/>
+			<Option target="ZipfDiskVersionAdaptive"/>
+			<Option target="ZipfDiskVersionAdaptiveStages"/>
+			<Option target="CQFDataGenerator"/>
+			<Option target="CuckooDataGenerator"/>
+			<Option target="InsertsDataGenerator"/>
+			<Option target="InsertsDataGenerator2"/>
+			<Option target="URLBlacklisting"/>
+			<Option target="UniformDataGenerator"/>
+			<Option target="Example"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/include/QuotientFilter/partitioned_counter.h">
+			<Option target="ZipfGraphsDataGenerator"/>
+			<Option target="ZipfGraphsDataGeneratorDiskVersion"/>
+			<Option target="FirehoseDataGenerator"/>
+			<Option target="FirehoseDataGeneratorDiskVersion"/>
+			<Option target="URLBlacklistingDiskVersion"/>
+			<Option target="ZipfDiskVersionAdaptive"/>
+			<Option target="ZipfDiskVersionAdaptiveStages"/>
+			<Option target="CQFDataGenerator"/>
+			<Option target="CuckooDataGenerator"/>
+			<Option target="InsertsDataGenerator"/>
+			<Option target="InsertsDataGenerator2"/>
+			<Option target="URLBlacklisting"/>
+			<Option target="UniformDataGenerator"/>
+			<Option target="Example"/>
+		</Unit>
+		<Unit filename="/home/dsabale2024/CS7280-Project-Code/adaptiveqf/external/StackedFilters/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
