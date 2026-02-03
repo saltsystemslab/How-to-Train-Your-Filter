@@ -20,6 +20,7 @@ stxxl.*
 
 obj/
 external/splinterdb
+external/StackedFilters_copy
 data/
 
 *.bin
