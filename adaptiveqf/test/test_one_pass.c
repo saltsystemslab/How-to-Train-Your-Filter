@@ -1,3 +1,8 @@
+/*
+For the given dataset, performs the one-pass experiment on the stacked filter,
+querying every positive and negative element exactly once.
+Reports the FPR for the filter on the dataset.
+*/
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -18,15 +23,6 @@
 #define MAX_LINE_LENGTH 2048
 #define READ_SIZE 4096
 #define URL_PATH "../data/malicious_url_scores.csv"
-
-uint64_t hash_str(char *str) {
-	uint64_t hash = 5381;
-	int c;
-	while ((c = *str++)) {
-		hash = ((hash << 5) + hash) + c;
-	}
-	return hash;
-}
 
 int main(int argc, char **argv)
 {
@@ -183,7 +179,6 @@ int main(int argc, char **argv)
 	free(line_buffer);
 	fclose(file_ptr);
 	if (verbose) fprintf(stderr, "finished reading %d insertions and %d queries\n", curr_inserts, curr_index);
-	printf("\nFinal: line_num=%d, curr_index=%d\n", line_num, curr_index);
 
 	// At this point, we now have a large list of insertions,
 	// and a list of file offsets corresponding to indices.

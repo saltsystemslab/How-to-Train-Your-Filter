@@ -26,6 +26,25 @@
 #define SHALLA_PATH "../data/shalla_combined.csv"
 #define CAIDA_PATH "../data/caida.csv"
 
+// Updates an element in the hash set reverse map.
+int set_update(set_node *set, int set_len, uint64_t key, uint64_t value) {
+	uint64_t hash = MurmurHash64A((void*)(&key), sizeof(key), HASH_SET_SEED);
+	set_node *ptr = &set[hash % set_len];
+	if (!ptr->key) {
+		return 0;
+	}
+	else {
+		while (ptr) {
+			if (ptr->key == key) {
+				ptr->value = value;
+				return 1;
+			}
+			ptr = ptr->next;
+		}
+		return 0;
+	}
+}
+
 // Inserts an element into the hash set reverse map.
 int set_insert(set_node *set, int set_len, uint64_t key, uint64_t value) {
 	uint64_t hash = MurmurHash64A((void*)(&key), sizeof(key), HASH_SET_SEED);
@@ -403,10 +422,12 @@ int read_queries(char *indexfilename, char *filename, int obj_index, int label_i
 	return 1;
 }
 
+// returns the size of the given AQF
 uint64_t get_aqf_size(QF *qf) {
 	return qf->metadata->total_size_in_bytes;
 }
 
+// returns an AQF according to the given build parameters
 QF build_aqf(uint64_t nslots, uint64_t nhashbits) {
 	QF qf;
 	if (!qf_malloc(&qf, nslots, nhashbits, 0, QF_HASH_INVERTIBLE, 0)) {
@@ -415,4 +436,21 @@ QF build_aqf(uint64_t nslots, uint64_t nhashbits) {
 	}
 	qf_set_auto_resize(&qf, false);
 	return qf;
+}
+
+// define descending order comparison for qsort
+int key_count_comp(const void *a, const void *b) {
+    uint64_t val_a = ((struct key_count *)a)->count;
+    uint64_t val_b = ((struct key_count *)b)->count;
+    return (val_a < val_b) - (val_a > val_b);
+}
+
+// hashes a given string
+uint64_t hash_str(char *str) {
+	uint64_t hash = 5381;
+	int c;
+	while ((c = *str++)) {
+		hash = ((hash << 5) + hash) + c;
+	}
+	return hash;
 }

@@ -1,5 +1,5 @@
 /*
-Runs the adversarial workload on the adaptive filter, where an adversary
+Runs the adversarial workload on the stacked filter, where an adversary
 learns false positives from the first half of the query set before periodically
 substituting queries with a rotating element from the false positive set in the second
 half of the query set.
@@ -19,6 +19,7 @@ half of the query set.
 #include "include/hashutil.h"
 #include "include/rand_util.h"
 #include "include/exp_utility.h"
+#include "stacked_wrapper.h"
 
 #define MAX_DATA_LINES 10000000
 
@@ -28,12 +29,13 @@ int main(int argc, char **argv)
 	int verbose = 1;
 	char indexfilename[512];
 	if (argc < 6) {
-		fprintf(stderr, "Please specify \nthe file path [eg. datasets/Malware_data.csv]\nthe index file path [eg. datasets/hashed_unif_10M_url.csv]\nthe number of queries [eg. 100000000]\nthe log of the number of slots in the QF [eg. 20]\nthe number of remainder bits in the QF [eg. 9]\n");
+		fprintf(stderr, "Please specify \nthe file path [eg. datasets/Malware_data.csv]\nthe index file path [eg. datasets/hashed_unif_10M_url.csv]\nthe number of queries [eg. 100000000]\nthe total size in bytes of the filter [eg. 1024]\nthe proportion of queries to track for negatives [eg. 0.25]\n");
 		exit(1);
 	}
 	
-	size_t qbits = atoi(argv[4]);
-	size_t rbits = atoi(argv[5]);
+    char* end;
+	size_t total_size = atoi(argv[4]);
+	double negative_proportion = strtod(argv[5], &end);
 	size_t num_queries = strtoull(argv[3], NULL, 10);
     char filename[100];
 	strcpy(filename, argv[1]);
@@ -106,7 +108,84 @@ int main(int argc, char **argv)
 
 	// Now insert all elements into the filter and perform the adversarial test
 
-	QF qf;
+	set_node *count_map = calloc(num_queries, sizeof(set_node));
+    if (!count_map) {
+        fprintf(stderr, "calloc failed for count_map\n");
+        return EXIT_FAILURE;
+    }
+
+    // first, track all the counts of the negative queries in the first 25% of queries
+    uint64_t *value;
+    int num_check = (int)(num_queries * negative_proportion); // adjust this later?
+    int num_negative = 0;
+    for (int i = 0; i < num_check; i++) {
+        if (query_labels[i] == 0) {
+            value = 0;
+            if (set_query(count_map, num_queries, query_set[i], &value)) {
+                // key already exists, so just increment count
+                set_update(count_map, num_queries, query_set[i], value + 1);
+            } else {
+                // key doesn't exist, start a new count
+                set_insert(count_map, num_queries, query_set[i], 1);
+                num_negative++;
+            }
+        }
+    }
+    fprintf(stderr, "found %d unique negative queries in first %d queries\n", num_negative, num_check);
+
+    // now, convert the map to an array for sorting
+    struct key_count *count_array = malloc(num_negative * sizeof(struct key_count));
+	if (!count_array) {
+        fprintf(stderr, "malloc failed for count_array\n");
+        return EXIT_FAILURE;
+    }
+    int index = 0;
+    for (int i = 0; i < num_queries; i++) {
+        // at the current index in the count map, check if all keys are non-zero
+        set_node *ptr = &count_map[i];
+        while  (ptr) {
+            if (ptr->key != 0) {
+                count_array[index].key = ptr->key;
+                count_array[index].count = ptr->value;
+                index++;
+            }
+            ptr = ptr->next;
+        }
+    }
+    free(count_map);
+
+    // now, sort the array in descending order by count
+    qsort(count_array, num_negative, sizeof(struct key_count), key_count_comp);
+
+    // create an array of sorted negative keys
+    uint64_t *sorted_negatives = malloc(num_negative * sizeof(uint64_t));
+    if (!sorted_negatives) {
+        fprintf(stderr, "malloc failed for sorted_negatives\n");
+        return EXIT_FAILURE;
+    }
+    for (int i = 0; i < num_negative; i++) {
+        sorted_negatives[i] = count_array[i].key;
+    }
+
+    // create an array of cdf values for the negatives
+    double *cdf = malloc(num_negative * sizeof(double));
+    if (!cdf) {
+        fprintf(stderr, "malloc failed for cdf\n");
+        return EXIT_FAILURE;
+    }
+    uint64_t total_count = 0;
+    for (int i = 0; i < num_negative; i++) {
+        total_count += count_array[i].count;
+    }
+    double sum = 0;
+    for (int i = 0; i < num_negative; i++) {
+		sum += count_array[i].count / total_count;
+        cdf[i] = sum;
+    }
+    free(count_array);
+
+    WrappedStackedFilter *filter;
+
 	struct timeval timecheck;
 	
 	for (int i = 0; i < num_trials; i++) {
@@ -117,44 +196,13 @@ int main(int argc, char **argv)
 			int murmur_seed = rand();
 
 			// create the filter
-			uint64_t nhashbits = qbits + rbits;
-			uint64_t nslots = (1ULL << qbits);
 			
 			gettimeofday(&timecheck, NULL);
 			uint64_t start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec, end_time;
-			if (!qf_malloc(&qf, nslots, nhashbits, 0, QF_HASH_INVERTIBLE, 0)) {
-				fprintf(stderr, "Can't allocate CQF.\n");
-				abort();
-			}
-			qf_set_auto_resize(&qf, false);
+			WrappedStackedFilter *stacked_filter = StackedFilterCreate(total_size*8, insert_set, num_inserts, sorted_negatives, num_negative, cdf, num_negative, 0);
 			gettimeofday(&timecheck, NULL);
 			end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
 			uint64_t filter_alloc_time = end_time - start_time;
-
-			// create the reverse map
-			gettimeofday(&timecheck, NULL);
-			start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
-			set_node *set = calloc(num_inserts, sizeof(set_node));
-			gettimeofday(&timecheck, NULL);
-			end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
-			uint64_t set_alloc_time = end_time - start_time;
-
-			// perform inserts
-			uint64_t total_filter_insert_time = 0;
-			uint64_t total_set_insert_time = 0;
-			uint64_t filter_insert_time, set_insert_time;
-			if (verbose) fprintf(stderr, "starting %d insertions\n", num_inserts);
-			for (int j = 0; j < num_inserts; j++) {
-				insert_set[j] = MurmurHash64A(&insert_set[j], sizeof(insert_set[j]), murmur_seed);
-				int result = insert_key(&qf, set, num_inserts, insert_set[j], 1, &timecheck, &filter_insert_time, &set_insert_time);
-				total_filter_insert_time += filter_insert_time;
-				total_set_insert_time += set_insert_time;
-				if (!result) {
-					fprintf(stderr, "insertion %d failed\n", j);
-					exit(1);
-				}
-			}
-			if (verbose) fprintf(stderr, "finished %d insertions\n", num_inserts);
 
 			// perform queries
 			uint64_t ret_index, ret_hash, result;
@@ -166,65 +214,44 @@ int main(int argc, char **argv)
 			int num_learn = num_queries / 2; // how many queries to use for learning false positives
 			int num_adv_learned = 0; // how many false positives were learned
 			uint64_t *adv_list = malloc(num_queries * sizeof(uint64_t)); // the list of learned false positives
-			int num_between_adv = (int)(num_queries/2)/(freq*num_queries);
+			uint64_t num_between_adv = (uint64_t)(num_queries/2)/(freq*num_queries);
+			fprintf(stderr, "num_between_adv: %ld\n", num_between_adv);
 			int current_adv_check = 0; // counter for checking if we should do the adversarial replacement
 			int current_adv_count = 0; // tracks which adversarial query we should use as the next replacement
 			uint64_t query;
 			uint64_t query_label;
 			fprintf(stderr, "started %ld queries with freq %.3f\n", num_queries, freq);
 			for (int j = 0; j < num_queries; j++) {
-				query_set[j] = MurmurHash64A(&query_set[j], sizeof(query_set[j]), murmur_seed);
 				// start with a regular query
 				query = query_set[j];
 				query_label = query_labels[j];
 				if (j > num_learn) {
-					current_adv_check++;
-					if (current_adv_check == num_between_adv) {
-						// replace the current query with an adversarial query
-						query = adv_list[current_adv_count % num_adv_learned];
-						query_label = 0;
-						current_adv_count++;
-						// reset the count
-						current_adv_check = 0;
+					if (num_adv_learned > 0) {
+						current_adv_check++;
+						if (current_adv_check == num_between_adv) {
+							// TODO - handle case where no false positives are found...
+							// replace the current query with an adversarial query
+							query = adv_list[current_adv_count % num_adv_learned];
+							query_label = 0;
+							current_adv_count++;
+							// reset the count
+							current_adv_check = 0;
+						}
 					}
 				}
 				gettimeofday(&timecheck, NULL);
 				start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
-				result = qf_query(&qf, query, &ret_index, &ret_hash, &ret_hash_len, QF_KEY_IS_HASH);
+				result = StackedFilterLookupElement(stacked_filter, &query);
 				gettimeofday(&timecheck, NULL);
 				end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
 				total_query_time += end_time - start_time;
 				if (result) {
-					uint64_t temp = ret_hash, orig_key = 0;
-					set_query(set, num_inserts, ret_hash, &orig_key);
-
 					if (query_label == 0) {
 						fp_count++;
 						if (j < num_learn) {
 							// if we're still in the learning phase, add to the list of false positives
 							adv_list[num_adv_learned] = query;
 							num_adv_learned++;
-						}
-						if (still_have_space) {
-							gettimeofday(&timecheck, NULL);
-							start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
-							ret_hash_len = qf_adapt(&qf, ret_index, orig_key, query, &ret_hash, QF_KEY_IS_HASH | QF_NO_LOCK);
-							if (ret_hash_len > 0) {
-								int ret = set_delete(set, num_inserts, temp);
-								if (ret == 0) {
-									printf("%d\n", i);
-									abort();
-								}
-								set_insert(set, num_inserts, ret_hash, orig_key);
-								gettimeofday(&timecheck, NULL);
-								end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
-								total_adapt_time += end_time - start_time;
-							}
-							else if (ret_hash_len == QF_NO_SPACE) {
-								still_have_space = 0;
-								fprintf(stderr, "\rfilter is full after %d queries\n", i);
-								continue;
-							}
 						}
 					}
 				}
@@ -233,29 +260,29 @@ int main(int argc, char **argv)
 			// calculate the false positive rate
 			int total_negatives = num_queries - pos_count;
 			double fpr = (double)fp_count / (fp_count + total_negatives);
+			fprintf(stderr, "number of learned adversarial negatives: %d\n", num_adv_learned);
+			fprintf(stderr, "number of adversaries inserted: %d\n", current_adv_count);
 			if (verbose) printf("False positive rate: %f\n", fpr);
 
 
 			FILE * outputptr;
-			outputptr = fopen("../results/aqf/aqf_advers_results.csv", "a");
+			outputptr = fopen("../results/stacked/stacked_advers_results.csv", "a");
 			fseek(outputptr, 0, SEEK_END);
 			long filesize = ftell(outputptr);
 			if (filesize == 0) {
 				// File is empty, write header
-				fprintf(outputptr, "dataset,query_dist,num_queries,freq,q,r,size,fpr,insert_time,map_time,amortized_query,amortized_adapt\n");
+				fprintf(outputptr, "dataset,query_dist,num_queries,freq,size,fpr,insert_time,amortized_query\n");
 			}
 
 			char new_result_row[512];
-			snprintf(new_result_row, sizeof(new_result_row), "%s,%s,%ld,%.3f,%ld,%ld,%ld,%.14f,%ld,%ld,%.14f,%.14f\n",
-					dataset, dist, num_queries, freq, qbits, rbits, qf.metadata->total_size_in_bytes, fpr,
-					total_filter_insert_time + filter_alloc_time, total_set_insert_time + set_alloc_time,
-					(double)total_query_time/num_queries,(double)total_adapt_time/num_queries);
+			snprintf(new_result_row, sizeof(new_result_row), "%s,%s,%ld,%.3f,%ld,%.14f,%ld,%.14f\n",
+					dataset, dist, num_queries, freq, total_size, fpr,
+					filter_alloc_time,
+					(double)total_query_time/num_queries);
 
 			fprintf(outputptr, new_result_row);
 			fclose(outputptr);
-			
-			set_free(set, num_inserts);
-			qf_free(&qf);
+			StackedFilterDestroy(stacked_filter);
 			free(adv_list);
 		}
 	}

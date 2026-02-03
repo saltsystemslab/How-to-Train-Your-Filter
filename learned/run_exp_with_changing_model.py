@@ -47,10 +47,10 @@ k = 5
 num_trials = 3 if results.trials is None else results.trials
 filters = results.filters
 
-config = {EMBER_DATASET: {"leaves": [5, 10, 15, 20, 25, 30], "total_size": 500000},
-          URL_DATASET: {"leaves": [2, 4, 6, 8, 10], "total_size": 70000},
-          SHALLA_DATASET: {"leaves": [20, 40, 60, 80, 100, 120, 140], "total_size": 4000000},
-          CAIDA_DATASET: {"leaves": [20, 40, 60, 80, 100], "total_size": 3000000}}
+config = {EMBER_DATASET: {"estimators": 10, "leaves": [64, 128, 192, 256, 320], "total_size": 500000},
+          URL_DATASET: {"estimators": 30, "leaves": [2, 4, 6, 8, 10], "total_size": 70000},
+          SHALLA_DATASET: {"estimators": 20, "leaves": [256, 512, 768, 924, 1280], "total_size": 4000000},
+          CAIDA_DATASET: {"estimators": 10, "leaves": [256, 512, 768, 924, 1280], "total_size": 3000000}}
     
 if dataset not in [EMBER_DATASET, URL_DATASET, SHALLA_DATASET, CAIDA_DATASET]:
     raise Exception(f"{dataset} not implemented yet.")
@@ -67,7 +67,7 @@ for filter in filters:
             rand_seed = random.randint(0, 4294967295)
             
             print(f"obtaining trained model with {current_leaves} leaves")
-            clf, model_size, construct_time, train_time, accuracy = create_model(keys, vectorized_keys, labels, dataset, sample_random=rand_seed, train_random=rand_seed, max_leaves=current_leaves)
+            clf, model_size, construct_time, train_time, accuracy = create_model(keys, vectorized_keys, labels, dataset, sample_random=rand_seed, train_random=rand_seed, max_leaves=current_leaves, n_estimators=config[dataset]["estimators"])
 
             model_size, construct_time, train_time, accuracy = int(model_size), float(construct_time), float(train_time), float(accuracy)
             scores = clf.predict_proba(vectorized_keys)[:, 1]

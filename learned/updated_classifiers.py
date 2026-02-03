@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from src.filters.utils.url_classifier import vectorize_url
 import pickle
@@ -20,6 +22,8 @@ SHALLA_DATASET = "shalla"
 CAIDA_DATASET = "caida"
 DEFAULT = "default"
 
+PATH = "path"
+DATA_PATH = "data_path"
 SCORES_PATH = "scores_path"
 SOURCE_PATH = "dataset_path"
 ESTIMATORS = "n_estimators"
@@ -28,57 +32,83 @@ OBJ_KEY = "object_key"
 LABEL_KEY = "label_key"
 SCORE_KEY = "score_key"
 POS_INDICATOR = "pos_indicator"
+DEC_TREE_NODES = "decision_tree_nodes"
+LOGISTIC_REGRESSION_C = "logistic_regression_c"
 
+DATA_PATH = "../data/"
+
+SUPPORTED_MODELS = ["random_forest", "decision_tree", "logistic_regression"]
+
+# updated parameters after running grid search
 CONFIG = {
     DEFAULT: {
         LABEL_KEY: "label",
-        SCORE_KEY: "score"
+        SCORE_KEY: "score",
     },
     URL_DATASET: {
-        SCORES_PATH: "../data/malicious_url_scores.csv",
-        SOURCE_PATH: "../data/malicious_url_scores.csv",
+        PATH: "malicious_url_scores.csv",
         OBJ_KEY: "url",
         LABEL_KEY: "type",
         SCORE_KEY: "prediction_score",
         POS_INDICATOR: 1,
         ESTIMATORS: 30,
         LEAVES: 10,
+        DEC_TREE_NODES: 320,
+        LOGISTIC_REGRESSION_C: 0.1
     },
     EMBER_DATASET: {
-        SCORES_PATH: "../data/combined_ember_metadata.csv",
+        PATH: "combined_ember_metadata.csv",
         SOURCE_PATH: "data/ember",
         OBJ_KEY: "sha256",
         LABEL_KEY: "label",
         SCORE_KEY: "score",
         POS_INDICATOR: 1,
-        ESTIMATORS: 80,
-        LEAVES: 30
+        ESTIMATORS: 10,
+        LEAVES: 320,
+        DEC_TREE_NODES: 1280,
+        LOGISTIC_REGRESSION_C: 0.00001
     },
     SHALLA_DATASET: {
-        SCORES_PATH: "../data/shalla_combined.csv",
-        SOURCE_PATH: "../data/shalla_combined.csv",
+        PATH: "shalla_combined.csv",
         OBJ_KEY: "url",
         LABEL_KEY: "label",
         SCORE_KEY: "score",
         POS_INDICATOR: 1,
-        ESTIMATORS: 150,
-        LEAVES: 140
+        ESTIMATORS: 20,
+        LEAVES: 1280,
+        DEC_TREE_NODES: 1280,
+        LOGISTIC_REGRESSION_C: 10
     },
     CAIDA_DATASET: {
-        SCORES_PATH: "../data/caida.csv",
-        SOURCE_PATH: "../data/caida.csv",
+        PATH: "caida.csv",
         OBJ_KEY: "No.",
         LABEL_KEY: "Label",
         SCORE_KEY: "score",
         POS_INDICATOR: 1,
-        ESTIMATORS: 120,
-        LEAVES: 100
+        ESTIMATORS: 10,
+        LEAVES: 1280,
+        DEC_TREE_NODES: 1280,
+        LOGISTIC_REGRESSION_C: 0.00001
     }
 }
 
 def get_ember_keys(create_data=False):
     """
     Obtains a list of vectorized positive and negative keys from the ember dataset.
+
+    Parameters
+    ----------
+    create_data : bool
+        whether or not the ember dataset has previously been built, necessary for metadata and feature setup.
+        
+    Returns
+    -------
+    meta_df: np.array
+        array of metadata strings
+    result_x: np.array
+        array of vectorized features
+    result_y: np.array
+        array of malware classifications
     """
     # first, create the data if necessary
     if create_data:
@@ -110,16 +140,32 @@ def obtain_raw_and_vectorized_keys(dataset: str, create_data=False):
 
     Usually, keys are used to insert into the filter, but the vectorized keys
     are used for the model to assess the key.
+
+    Parameters
+    ----------
+    dataset : str
+        which dataset (i.e. url, ember, shalla, caida) the keys and features should be drawn from
+    create_data : bool
+        whether or not the ember dataset has previously been built, necessary for metadata and feature setup.
+        
+    Returns
+    -------
+    keys: np.array
+        array of keys to insert
+    vectorized_keys: np.array
+        array of vectorized features
+    labels: np.array
+        array of malware classifications
     """
     if dataset == URL_DATASET:
-        data = pd.read_csv(CONFIG[URL_DATASET][SOURCE_PATH])
+        data = pd.read_csv(f"{DATA_PATH}{CONFIG[URL_DATASET][PATH]}")
         data[CONFIG[DEFAULT][LABEL_KEY]] = data[CONFIG[URL_DATASET][LABEL_KEY]].apply(lambda x: 1 if x == 'malicious' else 0)
         keys = np.array(data[CONFIG[URL_DATASET][OBJ_KEY]])
         vectorized_keys = np.array([vectorize_url(url) for url in keys])
         labels = np.array(data[CONFIG[DEFAULT][LABEL_KEY]])
         return keys, vectorized_keys, labels
     elif dataset == SHALLA_DATASET:
-        data = pd.read_csv(CONFIG[SHALLA_DATASET][SOURCE_PATH])
+        data = pd.read_csv(f"{DATA_PATH}{CONFIG[SHALLA_DATASET][PATH]}")
         data[CONFIG[DEFAULT][LABEL_KEY]] = data[CONFIG[SHALLA_DATASET][LABEL_KEY]]
         keys = np.array(data[CONFIG[SHALLA_DATASET][OBJ_KEY]])
         vectorized_keys = np.array([vectorize_url(url) for url in keys])
@@ -128,7 +174,7 @@ def obtain_raw_and_vectorized_keys(dataset: str, create_data=False):
     elif dataset == EMBER_DATASET:
         return get_ember_keys(create_data=create_data)
     elif dataset == CAIDA_DATASET:
-        data = pd.read_csv(CONFIG[CAIDA_DATASET][SOURCE_PATH])
+        data = pd.read_csv(f"{DATA_PATH}{CONFIG[CAIDA_DATASET][PATH]}")
         # 'index' column is the item we'll insert
         # 'label' column is labels
         # everything else is the vectorized key.
@@ -138,10 +184,11 @@ def obtain_raw_and_vectorized_keys(dataset: str, create_data=False):
         vectorized_keys = np.array(data.drop(columns=[CONFIG[CAIDA_DATASET][OBJ_KEY], CONFIG[CAIDA_DATASET][LABEL_KEY]]))
         return keys, vectorized_keys, labels
     else:
-        raise Exception(f"{dataset} dataset is not implemented yet.")
+        raise Exception(f"{dataset} dataset is not supported yet.")
 
 def create_model(keys, vectorized_keys, labels, dataset, train_size=0.3, 
-                 sample_random=26, train_random=42, save_model=False, n_estimators=None, max_leaves=None):
+                 sample_random=26, train_random=42, save_model=False, n_estimators=None, max_leaves=None, 
+                 model_type="random_forest"):
     """
     Creates a model for the given dataset using set configuration parameters.
     """
@@ -161,7 +208,14 @@ def create_model(keys, vectorized_keys, labels, dataset, train_size=0.3,
     # then, train a random forest classifier with the appropriate parameters
     print("constructing and training model")
     construct_start = time.time()
-    clf = RandomForestClassifier(n_estimators=n_estimators, max_leaf_nodes=max_leaves, random_state=train_random)
+    if model_type == "random_forest":
+        clf = RandomForestClassifier(n_estimators=CONFIG[dataset][ESTIMATORS], max_leaf_nodes=CONFIG[dataset][LEAVES], random_state=train_random)
+    elif model_type == "decision_tree":
+        clf = DecisionTreeClassifier(max_leaf_nodes=CONFIG[dataset][DEC_TREE_NODES], random_state=train_random)
+    elif model_type == "logistic_regression":
+        clf = LogisticRegression(C=CONFIG[dataset][LOGISTIC_REGRESSION_C], max_iter=2000, random_state=train_random)
+    else:
+        raise Exception(f"Model type {model_type} not supported.")
     construct_end = time.time()
     train_start = time.time()
     clf.fit(X_train, y_train)
@@ -173,7 +227,7 @@ def create_model(keys, vectorized_keys, labels, dataset, train_size=0.3,
     # we then save the model, returning the model and its size
     id = time.time()
     if save_model:
-        with open(f'models/{dataset}_{n_estimators}_{max_leaves}_{id}.pkl', 'wb') as f:
+        with open(f'models/{dataset}_{n_estimators}_{max_leaves}_{model_type}_{id}.pkl', 'wb') as f:
             pickle.dump(clf, f)
 
     # get the size of the model
@@ -182,12 +236,12 @@ def create_model(keys, vectorized_keys, labels, dataset, train_size=0.3,
     train_time = train_end - train_start
     return clf, size_in_bytes, construct_time, train_time, total_accuracy
 
-def read_model(dataset):
+def read_model(dataset, model_type="random_forest"):
     n_estimators = CONFIG[dataset][ESTIMATORS]
     max_leaves = CONFIG[dataset][LEAVES]
     # first, read the model
     model = None
-    with open(f'models/{dataset}_{n_estimators}_{max_leaves}.pkl', 'rb') as f:
+    with open(f'models/{dataset}_{n_estimators}_{max_leaves}_{model_type}.pkl', 'rb') as f:
         model = pickle.load(f)
     # next, go to the model training data and collect the training time info
     training_df = pd.read_csv("models/model_training_data.csv")
@@ -200,25 +254,32 @@ def read_model(dataset):
     return model, bytes, construct_time, train_time, accuracy
 
 if __name__ == "__main__":
+    # saves model scores as an additional column of the dataset csvs,
+    # useful for plotting the difference between positive and negative key scores.
     datasets_to_process = [URL_DATASET, EMBER_DATASET, SHALLA_DATASET, CAIDA_DATASET]
     with open("models/model_training_data.csv", "a") as file:
         writer = csv.writer(file)
-        writer.writerow(['dataset', 'bytes', 'construct_time', 'train_time', 'accuracy'])
+        writer.writerow(['dataset', 'model', 'bytes', 'construct_time', 'train_time', 'accuracy'])
         for dataset in datasets_to_process:
             print(f"training on {dataset}")
             keys, vectorized_keys, labels = obtain_raw_and_vectorized_keys(dataset, create_data=False)
-            clf, size_in_bytes, construct_time, train_time, accuracy = create_model(keys, vectorized_keys, labels,
-                                                                        dataset, save_model=True)
-            print("model size: ", size_in_bytes)
-            print("construct time: ", construct_time)
-            print("train time: ", train_time)
-            writer.writerow([dataset, str(size_in_bytes), str(construct_time), str(train_time), f'{accuracy:.4f}'])
+            for model_type in SUPPORTED_MODELS:
+                if model_type != "logistic_regression":
+                    continue
+                print(f"using model type: {model_type}")
+                clf, size_in_bytes, construct_time, train_time, accuracy = create_model(keys, vectorized_keys, labels,
+                                                                            dataset, model_type=model_type, save_model=True)
+                print("model size: ", size_in_bytes)
+                print("construct time: ", construct_time)
+                print("train time: ", train_time)
+                print("model accuracy: ", accuracy)
+                writer.writerow([dataset, model_type, str(size_in_bytes), str(construct_time), str(train_time), f'{accuracy:.4f}'])
 
-            print("writing to scores...")
-            # now update the scores for the dataset (used only for quick results sanity checks)
-            # this csv pairs each object/label with its score
-            scores_df = pd.read_csv(CONFIG[dataset][SCORES_PATH])
-            # find the vector corresponding to the object of each row in the csv then replace the score
-            # note that this assumes that the rows are aligned.
-            scores_df[CONFIG[dataset][SCORE_KEY]] = clf.predict_proba(vectorized_keys)[:,1]
-            scores_df.to_csv(CONFIG[dataset][SCORES_PATH], index=False)
+                print("writing to scores...")
+                # now update the scores for the dataset (used only for quick results sanity checks)
+                # this csv pairs each object/label with its score
+                scores_df = pd.read_csv(f"{DATA_PATH}{CONFIG[dataset][PATH]}")
+                # find the vector corresponding to the object of each row in the csv then replace the score
+                # note that this assumes that the rows are aligned.
+                scores_df[CONFIG[dataset][SCORE_KEY]] = clf.predict_proba(vectorized_keys)[:,1]
+                scores_df.to_csv(f"{DATA_PATH}{model_type}_{CONFIG[dataset][PATH]}", index=False)

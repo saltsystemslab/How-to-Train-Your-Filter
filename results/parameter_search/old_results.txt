@@ -1,0 +1,14 @@
+Dataset: url, Model: random_forest, Best Params: {'max_leaf_nodes': 40, 'n_estimators': 10}, Size (bytes): 67642, Best Score: 0.7995273404421898
+Dataset: url, Model: decision_tree, Best Params: {'max_leaf_nodes': 40}, Size (bytes): 7497, Best Score: 0.8176389759212288
+Dataset: url, Model: logistic_regression, Best Params: {'C': 1}, Size (bytes): 901, Best Score: 0.5904570226977102
+Dataset: url, Model: random_forest, Best Params: {'max_leaf_nodes': 40, 'n_estimators': 10}, Size (bytes): 67642, Best Score: 0.9445168259612456
+Dataset: url, Model: decision_tree, Best Params: {'max_leaf_nodes': 40}, Size (bytes): 7497, Best Score: 0.9442298611658974
+Dataset: url, Model: logistic_regression, Best Params: {'C': 0.01}, Size (bytes): 908, Best Score: 0.8873163027385407
+Dataset: ember, Model: random_forest, Best Params: {'max_leaf_nodes': 40, 'n_estimators': 40}, Size (bytes): 266526, Best Score: 0.8925300012499223
+Dataset: ember, Model: decision_tree, Best Params: {'max_leaf_nodes': 40}, Size (bytes): 7526, Best Score: 0.9275104083102587
+------
+Dataset: url, Model: random_forest, Best Params: {'max_leaf_nodes': 40, 'n_estimators': 10}, Size (bytes): 67642, Best Score: 0.9427817884864323
+Dataset: url, Model: decision_tree, Best Params: {'max_leaf_nodes': 320}, Size (bytes): 52301, Best Score: 0.9557528592384043
+Dataset: url, Model: logistic_regression, Best Params: {'C': 0.1}, Size (bytes): 908, Best Score: 0.8888482466426458
+Dataset: ember, Model: random_forest, Best Params: {'max_leaf_nodes': 320, 'n_estimators': 10}, Size (bytes): 515766, Best Score: 0.9560154171790956
+Dataset: ember, Model: decision_tree, Best Params: {'max_leaf_nodes': 640}, Size (bytes): 103539, Best Score: 0.9704733337801322

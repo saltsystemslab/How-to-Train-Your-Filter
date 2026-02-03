@@ -26,15 +26,15 @@ def write_results_safely(file_path, columns, row):
         results_df = pd.concat([results_df, pd.DataFrame([row])], ignore_index=True)
         results_df.to_csv(file_path, index=False)
 
-RESULTS_PATH = "./results/learned/results_with_model.csv"
-ADVERSARIAL_PATH = "./results/learned/advers_with_model.csv"
-RESULTS_COLUMNS = ["dataset", "filter", "bytes", "query_dist", "num_queries", 
+RESULTS_PATH = "../results/learned/results_with_model_builtin.csv"
+ADVERSARIAL_PATH = "../results/learned/advers_with_model_builtin.csv"
+RESULTS_COLUMNS = ["dataset", "model_type", "filter", "bytes", "query_dist", "num_queries", 
                     "construct_time", "train_time", "model_accuracy",
                     "initial_scores", "segment_division", "t_f_finding", "insert_scores", 
                     "bloom_init", "region_finding", "filter_inserts",
                     "fpr", "throughput", "med_pos_time", "med_neg_time",
                     "amort_score_time", "amort_region_time", "amort_back_filter_time"]
-ADVERS_COLUMNS = ["dataset", "filter", "bytes", "num_queries", "freq",
+ADVERS_COLUMNS = ["dataset", "model_type", "filter", "bytes", "num_queries", "freq",
                   "fpr", "throughput"]
 
 parser = argparse.ArgumentParser()
@@ -54,6 +54,7 @@ parser.add_argument('--trials', action="store", dest="trials", type=int, require
                     help="k: the number of trials to run")
 parser.add_argument('--new_model', action='store_true', dest='new_model',
                         help='adv: whether or not to create a new model')
+parser.add_argument('--model_type', action="store", dest="model_type", type=str, required=True,)
 
 results = parser.parse_args()
 
@@ -63,6 +64,7 @@ current_N = results.N
 current_k = results.k
 target_byte_size = results.bytes
 new_model = results.new_model
+model_type = results.model_type
 num_trials = 3 if results.trials == "none" else results.trials
 filters = results.filters
 
@@ -97,9 +99,9 @@ for i in range(num_trials):
         print("obtaining trained model")
         if new_model:
             keys, vectorized_keys, labels = obtain_raw_and_vectorized_keys(dataset)
-            clf, size_in_bytes, construct_time, train_time, accuracy = create_model(keys, vectorized_keys, labels, dataset, sample_random=rand_seed, train_random=rand_seed)
+            clf, size_in_bytes, construct_time, train_time, accuracy = create_model(keys, vectorized_keys, labels, dataset, sample_random=rand_seed, train_random=rand_seed, model_type=results.model_type)
         else:
-            clf, size_in_bytes, construct_time, train_time, accuracy = read_model(dataset)
+            clf, size_in_bytes, construct_time, train_time, accuracy = read_model(dataset, model_type=results.model_type)
 
         size_in_bytes, construct_time, train_time, accuracy = int(size_in_bytes), float(construct_time), float(train_time), float(accuracy)
         print("setting up queries...")
@@ -188,7 +190,7 @@ for i in range(num_trials):
                     dist = "other"
                 
                 if current_filter == "plbf":
-                    current_result = {"dataset": dataset, "filter": "plbf", "bytes": current_byte_size, "query_dist": dist, "num_queries": len(query_keys), 
+                    current_result = {"dataset": dataset, "model_type": model_type, "filter": "plbf", "bytes": current_byte_size, "query_dist": dist, "num_queries": len(query_keys), 
                                 "construct_time": construct_time, "train_time": train_time, "model_accuracy": accuracy,
                                 "initial_scores": filter.timing["initial_scores"], "segment_division": filter.timing["segment_division"], 
                                 "t_f_finding": filter.timing["t_f_finding"], "insert_scores": sum(filter.timing["insert_scores"]), 
@@ -198,7 +200,7 @@ for i in range(num_trials):
                                     "amort_score_time": sum(score_times) / len(score_times), 
                                     "amort_region_time": sum(search_times) / len(search_times), "amort_back_filter_time": sum(filter_times) / len(filter_times)}
                 elif current_filter == "adabf":
-                    current_result = {"dataset": dataset, "filter": "adabf", "bytes": current_byte_size, "query_dist": dist, "num_queries": len(query_keys), 
+                    current_result = {"dataset": dataset, "model_type": model_type, "filter": "adabf", "bytes": current_byte_size, "query_dist": dist, "num_queries": len(query_keys), 
                                 "construct_time": construct_time, "train_time": train_time, "model_accuracy": accuracy,
                                 "initial_scores": filter.timing["initial_scores"], 
                                 "bloom_init": filter.timing["bloom_init"], "region_finding": filter.timing["threshold_finding"], 

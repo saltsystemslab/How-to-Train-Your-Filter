@@ -86,7 +86,6 @@ def Find_Optimal_Parameters(c_min, c_max, num_group_min, num_group_max, R_sum, p
                 ss += 1
             FP_items = sum(test_result) + len(ML_positive)
             if FP_opt > FP_items:
-                print("found a bloom filter that works!")
                 FP_opt = FP_items
                 bloom_filter_opt = bloom_filter
                 thresholds_opt = thresholds

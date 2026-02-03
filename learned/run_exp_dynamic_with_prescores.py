@@ -7,7 +7,7 @@ from src.filters.ada_bf_index_query import Find_Optimal_Parameters
 import argparse
 import pandas as pd
 from updated_classifiers import (read_model, create_model, obtain_raw_and_vectorized_keys, 
-                                 EMBER_DATASET, URL_DATASET, SHALLA_DATASET, CAIDA_DATASET, POS_INDICATOR, CONFIG)
+                                 EMBER_DATASET, URL_DATASET, SHALLA_DATASET, CAIDA_DATASET, POS_INDICATOR, CONFIG, SUPPORTED_MODELS)
 import os
 import time
 import random
@@ -18,7 +18,7 @@ from filelock import FileLock
 
 FILTERS = ["plbf", "adabf"]
 RESULTS_PATH = "../results/learned/dynamic_results_with_model_scores.csv"
-RESULTS_COLUMNS = ["dataset", "filter", "bytes", "query_dist", "num_queries", 
+RESULTS_COLUMNS = ["dataset", "model", "filter", "bytes", "query_dist", "num_queries", 
                             "curr_query", "fpr"]
 
 def write_results_safely(file_path, columns, row):
@@ -54,7 +54,7 @@ results = parser.parse_args()
 DATASETS = results.datasets
 QUERY_PATH = results.query_path
 N = results.N
-k = results.k
+original_k = results.k
 M = results.M
 new_model = results.new_model
 num_trials = 3 if results.trials == "none" else results.trials
@@ -70,163 +70,164 @@ for dataset in DATASETS:
     print(f"starting evaluation on {dataset} ==============================")
     print("obtaining keys from dataset...")
     keys, vectorized_keys, labels = obtain_raw_and_vectorized_keys(dataset)
+    for model_type in SUPPORTED_MODELS:
+        print(f"using model type: {model_type}...")
+        print("obtaining trained model")
+        if new_model:
+            clf, model_size, construct_time, train_time, accuracy = create_model(keys, vectorized_keys, labels, dataset, model_type=model_type, sample_random=rand_seed, train_random=rand_seed)
+        else:
+            clf, model_size, construct_time, train_time, accuracy = read_model(dataset, model_type=model_type)
 
-    print("obtaining trained model")
-    if new_model:
-        clf, model_size, construct_time, train_time, accuracy = create_model(keys, vectorized_keys, labels, dataset, sample_random=rand_seed, train_random=rand_seed)
-    else:
-        clf, model_size, construct_time, train_time, accuracy = read_model(dataset)
+        model_size, construct_time, train_time, accuracy = int(model_size), float(construct_time), float(train_time), float(accuracy)
+        scores = clf.predict_proba(vectorized_keys)[:, 1]
 
-    model_size, construct_time, train_time, accuracy = int(model_size), float(construct_time), float(train_time), float(accuracy)
-    scores = clf.predict_proba(vectorized_keys)[:, 1]
+        # set up the queries
+        query_indices = pd.read_csv(QUERY_PATH)["index"]
+        query_indices = query_indices[query_indices < len(keys)]
+        query_keys = keys[query_indices]
+        query_scores = scores[query_indices]
+        query_labels = labels[query_indices]
 
-    # set up the queries
-    query_indices = pd.read_csv(QUERY_PATH)["index"]
-    query_indices = query_indices[query_indices < len(keys)]
-    query_keys = keys[query_indices]
-    query_scores = scores[query_indices]
-    query_labels = labels[query_indices]
+        # distinguish the positive and negative keys/scores
+        pos_keys = keys[labels == CONFIG[dataset][POS_INDICATOR]]
+        pos_scores = scores[labels == CONFIG[dataset][POS_INDICATOR]]
+        neg_keys = keys[labels != CONFIG[dataset][POS_INDICATOR]]
+        neg_scores = scores[labels != CONFIG[dataset][POS_INDICATOR]]
 
-    # distinguish the positive and negative keys/scores
-    pos_keys = keys[labels == CONFIG[dataset][POS_INDICATOR]]
-    pos_scores = scores[labels == CONFIG[dataset][POS_INDICATOR]]
-    neg_keys = keys[labels != CONFIG[dataset][POS_INDICATOR]]
-    neg_scores = scores[labels != CONFIG[dataset][POS_INDICATOR]]
+        print(f"ready to begin {len(query_keys)} queries...")
 
-    print(f"ready to begin {len(query_keys)} queries...")
+        max_size_with_fp = -1
+        for current_byte_size in M:
+            print(f"Starting tests for filters of size {current_byte_size} bytes -------------------")
+            remaining_bit_size = (current_byte_size - model_size) * 8
+            print(f"backup filter size: {remaining_bit_size}")
 
-    max_size_with_fp = -1
-    for current_byte_size in M:
-        print(f"Starting tests for filters of size {current_byte_size} bytes -------------------")
-        remaining_bit_size = (current_byte_size - model_size) * 8
-        print(f"backup filter size: {remaining_bit_size}")
-
-        replacement_size = int(0.2 * len(pos_keys))
-        if len(neg_keys) < len(pos_keys):
-            raise Exception("not enough negative keys to do the dynamic test")
-            
-        space_between_replace = int(0.1 * len(query_keys))
-        space_between_inst = int(0.01 * len(query_keys))
-        
-        replace_keys = neg_keys[:len(pos_keys)].copy()
-        replace_scores = neg_scores[:len(pos_keys)].copy()
-
-        # choose a subset of the negative keys for the filter to train on
-        train_neg_keys, test_neg_keys, train_neg_scores, test_neg_scores = train_test_split(neg_keys, neg_scores, train_size=0.3)
-
-        pos_key_set = set(pos_keys)
-        for filter in filters:
-            if filter not in FILTERS:
-                print(f"{filter} is not implemented...")
-                continue
-            if filter == "plbf":
-                print("Creating plbf")
-                learned_filter = FastPLBF_M(pos_keys, pos_scores, train_neg_scores, remaining_bit_size, N, k)
-            elif filter == "adabf":
-                print("Creating adabf")
-                learned_filter, thresholds_opt, k_max_opt = Find_Optimal_Parameters(2.1, 2.6, 8, 11, remaining_bit_size, 
-                                                                            pos_keys, train_neg_keys, pos_scores, train_neg_scores)
-                # learned_filter, thresholds_opt, k_max_opt = Find_Optimal_Parameters(1, 5, 2, 30, 2000000, 
-                #                                                             pos_keys, train_neg_keys, pos_scores, train_neg_scores)
+            replacement_size = int(0.2 * len(pos_keys))
+            if len(neg_keys) < len(pos_keys):
+                raise Exception("not enough negative keys to do the dynamic test")
                 
-            # now test on the actual query set
-            for i in range(num_trials):
-                print(f"starting trial {i}:")
-                num_q_to_learn_adv = int(len(query_keys) / 2)
-                fp_cnt = 0
-                first_half_fp = list()
-                first_half_fp_cnt = 0
-                first_half_neg_cnt = 0
-                query_count = 0
+            space_between_replace = int(0.1 * len(query_keys))
+            space_between_inst = int(0.01 * len(query_keys))
+            
+            replace_keys = neg_keys[:len(pos_keys)].copy()
+            replace_scores = neg_scores[:len(pos_keys)].copy()
 
-                replace_count = 0
-                inst_count = 0
-                num_replacements = 0
-                start_query = time.time()
-                for key, score in zip(query_keys, query_scores):
-                    query_count += 1
-                    replace_count += 1
-                    inst_count += 1
-                    if replace_count == space_between_replace:
-                        # do a churn of 20% of the items
-                        replace_count = 0
-                        start_replace = (num_replacements % 5) * replacement_size
-                        rows_to_swap = np.arange(start_replace, start_replace + replacement_size)
+            # choose a subset of the negative keys for the filter to train on
+            train_neg_keys, test_neg_keys, train_neg_scores, test_neg_scores = train_test_split(neg_keys, neg_scores, train_size=0.3)
 
-                        new_neg_keys = pos_keys[rows_to_swap].copy()
-                        new_neg_scores = pos_scores[rows_to_swap].copy()
-                        new_pos_keys = replace_keys[rows_to_swap].copy()
-                        new_pos_scores = replace_scores[rows_to_swap].copy()
+            pos_key_set = set(pos_keys)
+            for filter in filters:
+                if filter not in FILTERS:
+                    print(f"{filter} is not implemented...")
+                    continue
+                if filter == "plbf":
+                    print("Creating plbf")
+                    learned_filter = FastPLBF_M(pos_keys, pos_scores, train_neg_scores, remaining_bit_size, N, original_k)
+                elif filter == "adabf":
+                    print("Creating adabf")
+                    learned_filter, thresholds_opt, k_max_opt = Find_Optimal_Parameters(2.1, 2.6, 8, 11, remaining_bit_size, 
+                                                                                pos_keys, train_neg_keys, pos_scores, train_neg_scores)
+                    # learned_filter, thresholds_opt, k_max_opt = Find_Optimal_Parameters(1, 5, 2, 30, 2000000, 
+                    #                                                             pos_keys, train_neg_keys, pos_scores, train_neg_scores)
+                    
+                # now test on the actual query set
+                for i in range(num_trials):
+                    print(f"starting trial {i}:")
+                    num_q_to_learn_adv = int(len(query_keys) / 2)
+                    fp_cnt = 0
+                    first_half_fp = list()
+                    first_half_fp_cnt = 0
+                    first_half_neg_cnt = 0
+                    query_count = 0
 
-                        pos_keys[rows_to_swap] = new_pos_keys
-                        pos_scores[rows_to_swap] = new_pos_scores
-                        replace_keys[rows_to_swap] = new_neg_keys
-                        replace_scores[rows_to_swap] = new_neg_scores
+                    replace_count = 0
+                    inst_count = 0
+                    num_replacements = 0
+                    start_query = time.time()
+                    for key, score in zip(query_keys, query_scores):
+                        query_count += 1
+                        replace_count += 1
+                        inst_count += 1
+                        if replace_count == space_between_replace:
+                            # do a churn of 20% of the items
+                            replace_count = 0
+                            start_replace = (num_replacements % 5) * replacement_size
+                            rows_to_swap = np.arange(start_replace, start_replace + replacement_size)
 
-                        # remake the filter with the new insertions...
-                        # here we use the same positive and negative scores (preserving the model)
-                        # but replace the contents of the positive keys
-                        if filter == "plbf":
-                            print("Creating plbf")
-                            # the plbf's 'insert keys' function remakes all of the backup filters for the given lists of keys/scores.
-                            # doing this will preserve the original regions while refreshing the contents of the filters.
-                            learned_filter.insert_keys(pos_keys, pos_scores)
-                        elif filter == "adabf":
-                            print("Creating adabf")
-                            # we just clear the contents of the filter and reinsert all elements
-                            # using the existing thresholds and k
-                            learned_filter.clear()
-                            for score, key in zip(pos_scores, pos_keys):
-                                ix = min(np.where(score < learned_filter.thresholds_opt)[0])
-                                k = learned_filter.k_max_opt - ix
-                                learned_filter.insert(key, k)
-                        print("successfully completed a churn")
-                        pos_key_set = set(pos_keys)
-                        num_replacements += 1
-                    if inst_count == space_between_inst:
-                        # obtain the instantaneous false positive rate
-                        print(f"trying to obtain inst fpr")
-                        curr_inst_count = 0
-                        inst_fp = 0
-                        
-                        start = time.time()
-                        for inst_key, inst_score in zip(query_keys, query_scores):
-                            curr_inst_count += 1
-                            found = learned_filter.contains(inst_key, inst_score)
-                            if inst_key in pos_key_set:
-                                assert(found)
-                            else:
-                                if found:
-                                    inst_fp += 1
+                            new_neg_keys = pos_keys[rows_to_swap].copy()
+                            new_neg_scores = pos_scores[rows_to_swap].copy()
+                            new_pos_keys = replace_keys[rows_to_swap].copy()
+                            new_pos_scores = replace_scores[rows_to_swap].copy()
+
+                            pos_keys[rows_to_swap] = new_pos_keys
+                            pos_scores[rows_to_swap] = new_pos_scores
+                            replace_keys[rows_to_swap] = new_neg_keys
+                            replace_scores[rows_to_swap] = new_neg_scores
+
+                            # remake the filter with the new insertions...
+                            # here we use the same positive and negative scores (preserving the model)
+                            # but replace the contents of the positive keys
+                            if filter == "plbf":
+                                print("Creating plbf")
+                                # the plbf's 'insert keys' function remakes all of the backup filters for the given lists of keys/scores.
+                                # doing this will preserve the original regions while refreshing the contents of the filters.
+                                learned_filter.insert_keys(pos_keys, pos_scores)
+                            elif filter == "adabf":
+                                print("Creating adabf")
+                                # we just clear the contents of the filter and reinsert all elements
+                                # using the existing thresholds and k
+                                learned_filter.clear()
+                                for score, key in zip(pos_scores, pos_keys):
+                                    ix = min(np.where(score < learned_filter.thresholds_opt)[0])
+                                    k = learned_filter.k_max_opt - ix
+                                    learned_filter.insert(key, k)
+                            print("successfully completed a churn")
+                            pos_key_set = set(pos_keys)
+                            num_replacements += 1
+                        if inst_count == space_between_inst:
+                            # obtain the instantaneous false positive rate
+                            print(f"trying to obtain inst fpr")
+                            curr_inst_count = 0
+                            inst_fp = 0
                             
-                            if curr_inst_count % int(len(query_keys) / 10) == 0:
-                                end = time.time()
-                                print(f"{curr_inst_count / (len(query_keys)) * 100}% finished with inst after {end - start} seconds")
-                                start = time.time()
-                        inst_count = 0
-                        neg_queries = query_keys[query_labels != CONFIG[dataset][POS_INDICATOR]] 
-                        fpr = inst_fp / (inst_fp + len(neg_queries))
-                        if QUERY_PATH == "none":
-                            dist = "none"
-                        elif "unif" in QUERY_PATH:
-                            dist = "unif"
-                        elif "zipf" in QUERY_PATH:
-                            dist = "zipf"
+                            start = time.time()
+                            for inst_key, inst_score in zip(query_keys, query_scores):
+                                curr_inst_count += 1
+                                found = learned_filter.contains(inst_key, inst_score)
+                                if inst_key in pos_key_set:
+                                    assert(found)
+                                else:
+                                    if found:
+                                        inst_fp += 1
+                                
+                                # if curr_inst_count % int(len(query_keys) / 10) == 0:
+                                #     end = time.time()
+                                #     print(f"{curr_inst_count / (len(query_keys)) * 100}% finished with inst after {end - start} seconds")
+                                #     start = time.time()
+                            inst_count = 0
+                            neg_queries = query_keys[query_labels != CONFIG[dataset][POS_INDICATOR]] 
+                            fpr = inst_fp / (inst_fp + len(neg_queries))
+                            if QUERY_PATH == "none":
+                                dist = "none"
+                            elif "unif" in QUERY_PATH:
+                                dist = "unif"
+                            elif "zipf" in QUERY_PATH:
+                                dist = "zipf"
+                            else:
+                                dist = "other"
+                            print(f"False Positive Rate: {fpr} [{inst_fp} / ({inst_fp} + {len(neg_queries)})]")
+                            current_result = {"dataset": dataset, "model_type": model_type, "filter": filter, "bytes": current_byte_size, 
+                                            "query_dist": dist, "num_queries": len(query_keys), 
+                                                "curr_query": query_count, "fpr": fpr}
+                            write_results_safely(RESULTS_PATH, RESULTS_COLUMNS, current_result)
+                        found = learned_filter.contains(key, score)
+                        if key in pos_key_set:
+                            assert(found)
                         else:
-                            dist = "other"
-                        print(f"False Positive Rate: {fpr} [{inst_fp} / ({inst_fp} + {len(neg_queries)})]")
-                        current_result = {"dataset": dataset, "filter": filter, "bytes": current_byte_size, 
-                                          "query_dist": dist, "num_queries": len(query_keys), 
-                                            "curr_query": query_count, "fpr": fpr}
-                        write_results_safely(RESULTS_PATH, RESULTS_COLUMNS, current_result)
-                    found = learned_filter.contains(key, score)
-                    if key in pos_key_set:
-                        assert(found)
-                    else:
-                        if found:
-                            fp_cnt += 1  
-                    if query_count % int(len(query_keys) / 20) == 0:
-                        end_query = time.time()
-                        print(f"{query_count / (len(query_keys)) * 100}% finished overall after {end_query - start_query} seconds")
-                        start_query = time.time()
+                            if found:
+                                fp_cnt += 1  
+                        if query_count % int(len(query_keys) / 20) == 0:
+                            end_query = time.time()
+                            print(f"{query_count / (len(query_keys)) * 100}% finished overall after {end_query - start_query} seconds")
+                            start_query = time.time()
 print("finished")
