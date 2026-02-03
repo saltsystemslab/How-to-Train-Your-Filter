@@ -1,4 +1,4 @@
- # Adaptive Quotient Filter
+ # AdaptiveQF and Stacked Filter
 
  This folder originates from the base implementation of the **[AdaptiveQf](https://github.com/splatlab/adaptiveqf)**.
 
