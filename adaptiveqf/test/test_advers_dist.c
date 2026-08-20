@@ -178,14 +178,16 @@ int main(int argc, char **argv)
 				query = query_set[j];
 				query_label = query_labels[j];
 				if (j > num_learn) {
-					current_adv_check++;
-					if (current_adv_check == num_between_adv) {
-						// replace the current query with an adversarial query
-						query = adv_list[current_adv_count % num_adv_learned];
-						query_label = 0;
-						current_adv_count++;
-						// reset the count
-						current_adv_check = 0;
+					if (num_adv_learned > 0) {
+						current_adv_check++;
+						if (current_adv_check == num_between_adv) {
+							// replace the current query with an adversarial query
+							query = adv_list[current_adv_count % num_adv_learned];
+							query_label = 0;
+							current_adv_count++;
+							// reset the count
+							current_adv_check = 0;
+						}
 					}
 				}
 				gettimeofday(&timecheck, NULL);

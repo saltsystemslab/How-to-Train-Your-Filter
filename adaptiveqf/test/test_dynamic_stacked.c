@@ -91,12 +91,15 @@ int main(int argc, char **argv)
 		if (strcmp(filename, URL_PATH) == 0) {
 			char * malicious = strstr(buffer, ",malicious,");
 			char *url;
-			if (buffer[0] == "\"") {
+			char url_buf[READ_SIZE];
+			if (buffer[0] == '"') {
 				// if the first character is a ", it means that the element is a weirdly-formatted url
 				int url_index = 1;
-				while (buffer[url_index] != "\"") url_index++;
+				while (buffer[url_index] != '"') url_index++;
 				// the url will be the substring from index 1 to url_index
-				strncpy(url, buffer + 1, url_index-1);
+				strncpy(url_buf, buffer + 1, url_index-1);
+				url_buf[url_index-1] = '\0';
+				url = url_buf;
 			} else {
 				// otherwise, simply dividing the str with "," gives the url
 				url = strtok(buffer, ",");
@@ -288,7 +291,7 @@ int main(int argc, char **argv)
 			set_insert(positives, curr_inserts, insert_set[j], insert_set[j]);
 		}
 
-		for (int j = 0; j <= num_queries; j++) {
+		for (int j = 0; j < num_queries; j++) {
             if (churn_count == space_between_churn) {
 				if (verbose) fprintf(stderr, "performing churn %d\n", num_churns);
 				churn_count = 0;

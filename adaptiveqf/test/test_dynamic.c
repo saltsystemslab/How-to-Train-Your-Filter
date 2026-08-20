@@ -88,12 +88,15 @@ int main(int argc, char **argv)
 		if (strcmp(filename, URL_PATH) == 0) {
 			char * malicious = strstr(buffer, ",malicious,");
 			char *url;
-			if (buffer[0] == "\"") {
+			char url_buf[READ_SIZE];
+			if (buffer[0] == '"') {
 				// if the first character is a ", it means that the element is a weirdly-formatted url
 				int url_index = 1;
-				while (buffer[url_index] != "\"") url_index++;
+				while (buffer[url_index] != '"') url_index++;
 				// the url will be the substring from index 1 to url_index
-				strncpy(url, buffer + 1, url_index-1);
+				strncpy(url_buf, buffer + 1, url_index-1);
+				url_buf[url_index-1] = '\0';
+				url = url_buf;
 			} else {
 				// otherwise, simply dividing the str with "," gives the url
 				url = strtok(buffer, ",");
@@ -221,7 +224,6 @@ int main(int argc, char **argv)
 		uint64_t filter_insert_time, set_insert_time;
 		for (int j = 0; j < curr_inserts; j++) {
 			insert_set[j] = MurmurHash64A(&insert_set[j], sizeof(insert_set[j]), murmur_seed);
-			query_set[j] = MurmurHash64A(&query_set[j], sizeof(query_set[j]), murmur_seed);
 			int result = insert_key(&qf, set, curr_inserts, insert_set[j], 1, &timecheck, &filter_insert_time, &set_insert_time);
 			set_insert(positives, curr_inserts, insert_set[j], insert_set[j]);
 			if (!result) {
@@ -229,8 +231,19 @@ int main(int argc, char **argv)
 				exit(1);
 			}
 		}
+		// hash the full query set up front: the loop below re-scans query_set
+		// out of order (churn windows, periodic instantaneous-FPR sweeps), so
+		// each element must already be hashed exactly once before that starts.
+		for (int j = 0; j < num_queries; j++) {
+			query_set[j] = MurmurHash64A(&query_set[j], sizeof(query_set[j]), murmur_seed);
+		}
+		// hash the slice of negative_set that churns swap into insert_set, so
+		// swapped-in elements are keyed the same way as the rest of insert_set.
+		for (int j = 0; j < curr_inserts; j++) {
+			negative_set[j] = MurmurHash64A(&negative_set[j], sizeof(negative_set[j]), murmur_seed);
+		}
 
-		for (int j = 0; j <= num_queries; j++) {
+		for (int j = 0; j < num_queries; j++) {
             if (churn_count == space_between_churn) {
 				if (verbose) fprintf(stderr, "performing churn %d\n", num_churns);
 				churn_count = 0;
