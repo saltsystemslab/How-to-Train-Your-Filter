@@ -407,7 +407,7 @@ int main(int argc, char **argv)
 					}
 				}
 				fprintf(stderr, "instantaneous FPR check: %d false positives out of %d negatives\n", inst_fp_count, num_negative);
-				inst_fpr = (double)inst_fp_count / (inst_fp_count + num_negative);
+				inst_fpr = (double)inst_fp_count / num_negative;
 				// write the instantaneous fpr to file
 				FILE * outputptr;
 				outputptr = fopen("../results/stacked/stacked_results_dynamic.csv", "a");

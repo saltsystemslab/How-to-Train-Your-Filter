@@ -160,8 +160,8 @@ for dataset in DATASETS:
                                     first_half_fp_cnt += 1        
                         query_count += 1
                     neg_queries = query_keys[query_labels != CONFIG[dataset][POS_INDICATOR]] 
-                    fpr = fp_cnt / (fp_cnt + len(neg_queries))
-                    print(f"False Positive Rate: {fpr} [{fp_cnt} / ({fp_cnt} + {len(neg_queries)})]")
+                    fpr = fp_cnt / len(neg_queries)
+                    print(f"False Positive Rate: {fpr} [{fp_cnt} / {len(neg_queries)}]")
 
                     # now, we save the results to a file
                     if QUERY_PATH == None:
@@ -224,7 +224,7 @@ for dataset in DATASETS:
                             neg_rows_first = (first_half_labels != CONFIG[dataset][POS_INDICATOR])
                             num_neg = len(first_half_labels[neg_rows_first]) + negative_count
                             total_fp = first_half_fp_cnt + second_half_fp_cnt
-                            adversarial_fpr = total_fp / (total_fp + num_neg) 
+                            adversarial_fpr = total_fp / num_neg
                             print(f"negative queries: {len(first_half_labels[neg_rows_first])} + {negative_count}")
                             print(f"False Positive with {freq} Adversarial: {adversarial_fpr} [ {total_fp} / ({total_fp} + {num_neg})]")
                             print(f"First half fp: {first_half_fp_cnt}, Second half fp: {second_half_fp_cnt}")

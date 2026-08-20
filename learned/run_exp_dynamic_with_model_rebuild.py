@@ -228,7 +228,7 @@ for dataset in DATASETS:
                             # get the instantaneous fpr
                             inst_count = 0
                             neg_queries = query_keys[query_labels != CONFIG[dataset][POS_INDICATOR]] 
-                            fpr = inst_fp / (inst_fp + len(neg_queries))
+                            fpr = inst_fp / len(neg_queries)
                             # now, we save the results to a file
                             if QUERY_PATH == "none":
                                 dist = "none"

@@ -45,6 +45,7 @@ models = {"forest": "random_forest", "tree": "decision_tree", "logistic": "logis
 
 # which models should be included when reporting experiments describing fpr for different filters
 fpr_models = {"tree": "decision_tree"}
+fpr_models = {"forest": "random_forest", "tree": "decision_tree", "logistic": "logistic_regression"}
 
 # the sizes used by the filters in the adversarial query experiments
 ADVERSARIAL_SIZES = {"url": 77672, "ember": 606338, "shalla": 4807488, "caida": 2408635}
@@ -907,12 +908,12 @@ def plot_dynamic_exp(learned_filepath : str, adaptive_filepath : str, stacked_fi
 if __name__ == "__main__":
     plot_fpr_space_tradeoff('../results/learned/overall_results_with_model_scores.csv', '../results/aqf/aqf_results.csv', '../results/stacked/stacked_results.csv')
     plot_adversarial('../results/learned/overall_advers_with_model_scores.csv', '../results/aqf/aqf_advers_results.csv', '../results/stacked/stacked_advers_results.csv')
-    print("construction: ")
-    plot_construction_times('../results/learned/results_with_model_builtin.csv', '../results/aqf/aqf_results.csv', '../results/stacked/stacked_results.csv')
-    print("query: ")
-    plot_query_times('../results/learned/results_with_model_builtin.csv', '../results/aqf/aqf_results.csv', '../results/stacked/stacked_results.csv')
-    plot_model_degradation('../results/learned/degrad_results_with_model_scores.csv')
-    plot_changing_model_exp('../results/learned/changing_model_size.csv')
+    # print("construction: ")
+    # plot_construction_times('../results/learned/results_with_model_builtin.csv', '../results/aqf/aqf_results.csv', '../results/stacked/stacked_results.csv')
+    # print("query: ")
+    # plot_query_times('../results/learned/results_with_model_builtin.csv', '../results/aqf/aqf_results.csv', '../results/stacked/stacked_results.csv')
+    # plot_model_degradation('../results/learned/degrad_results_with_model_scores.csv')
+    # plot_changing_model_exp('../results/learned/changing_model_size.csv')
     plot_dynamic_exp('../results/learned/dynamic_results_with_model_scores.csv', '../results/aqf/aqf_results_dynamic.csv', '../results/stacked/stacked_results_dynamic.csv',
                      learned_filters=["plbf", "adabf"], unique_datasets=["url", "ember", "caida"],
                      output_name="combined_fpr_dynamic.pdf")

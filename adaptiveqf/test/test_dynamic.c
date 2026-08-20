@@ -283,7 +283,7 @@ int main(int argc, char **argv)
 						}
 					}
 				}
-				inst_fpr = (double)inst_fp_count / (inst_fp_count + num_negative);
+				inst_fpr = (double)inst_fp_count / num_negative;
 				// write the instantaneous fpr to file
 				FILE * outputptr;
 				outputptr = fopen("../results/aqf/aqf_results_dynamic.csv", "a");

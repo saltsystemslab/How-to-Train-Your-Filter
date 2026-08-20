@@ -229,8 +229,8 @@ if __name__ == "__main__":
         # the internal filters needs to be done.
         print(f"Construction Time: {construct_end - construct_start}")
         print(f"Memory Usage of Backup BF: {plbf.memory_usage_of_backup_bf}")
-        fpr = fp_cnt / (fp_cnt + len(negative_queries))
-        print(f"False Positive Rate: {fpr} [{fp_cnt} / ({fp_cnt} + {len(negative_queries)})]")
+        fpr = fp_cnt / len(negative_queries)
+        print(f"False Positive Rate: {fpr} [{fp_cnt} / {len(negative_queries)}]")
         
         # now save the results to a file
         if QUERY_PATH == "none":
@@ -299,7 +299,7 @@ if __name__ == "__main__":
                 adversarial_avg_time = (sum(first_half_times) + sum(remaining_times) + sum(adversarial_times)) / (len(first_half_times) + len(remaining_times) + len(adversarial_times))
                 adversarial_throughput = 1 / adversarial_avg_time
                 print(f"Average time with adversarial workload: ", adversarial_avg_time)
-                adversarial_fpr = total_fp / (total_fp + num_neg)
+                adversarial_fpr = total_fp / num_neg
                 print(f"False Positive with {freq} Adversarial: {adversarial_fpr} [ {total_fp} / ({total_fp} + {num_neg})]")
 
                 # now save the results to a file

@@ -259,7 +259,7 @@ int main(int argc, char **argv)
 
 			// calculate the false positive rate
 			int total_negatives = num_queries - pos_count;
-			double fpr = (double)fp_count / (fp_count + total_negatives);
+			double fpr = (double)fp_count / total_negatives;
 			fprintf(stderr, "number of learned adversarial negatives: %d\n", num_adv_learned);
 			fprintf(stderr, "number of adversaries inserted: %d\n", current_adv_count);
 			if (verbose) printf("False positive rate: %f\n", fpr);

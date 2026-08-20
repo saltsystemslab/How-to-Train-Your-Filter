@@ -134,8 +134,8 @@ for dataset in DATASETS:
                                 if found:
                                     fp_cnt += 1     
                         neg_queries = query_keys[query_labels != CONFIG[dataset][POS_INDICATOR]] 
-                        fpr = fp_cnt / (fp_cnt + len(neg_queries))
-                        print(f"False Positive Rate: {fpr} [{fp_cnt} / ({fp_cnt} + {len(neg_queries)})]")
+                        fpr = fp_cnt / len(neg_queries)
+                        print(f"False Positive Rate: {fpr} [{fp_cnt} / {len(neg_queries)}]")
 
                         # now, we save the results to a file
                         if QUERY_PATH == "none":

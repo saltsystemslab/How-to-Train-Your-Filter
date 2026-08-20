@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 		int total_negatives = total_queries- num_inserts;
 		fprintf(stderr, "total negatives in query set: %d\n", total_negatives);
 		if (verbose) printf("Total false positives in query set: %d\n", fp_count);
-		double fpr = (double)fp_count / (fp_count + total_negatives);
+		double fpr = (double)fp_count / total_negatives;
 		if (verbose) printf("False positive rate: %f\n", fpr);
 
 

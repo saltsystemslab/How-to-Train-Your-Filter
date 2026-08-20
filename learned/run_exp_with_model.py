@@ -176,8 +176,8 @@ for i in range(num_trials):
                             fp_cnt += 1
                 throughput = len(query_keys) / (sum(neg_times) + sum(pos_times))
                 print(f"Throughput: {throughput} queries/sec")            
-                fpr = fp_cnt / (fp_cnt + len(neg_keys))
-                print(f"False Positive Rate: {fpr} [{fp_cnt} / ({fp_cnt} + {len(neg_keys)})]")
+                fpr = fp_cnt / len(neg_keys)
+                print(f"False Positive Rate: {fpr} [{fp_cnt} / {len(neg_keys)}]")
 
                 # now, we save the results to a file
                 if QUERY_PATH == "none":

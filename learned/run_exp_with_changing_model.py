@@ -124,8 +124,8 @@ for filter in filters:
                     if found:
                         fp_cnt += 1
             neg_queries = query_keys[query_labels != CONFIG[dataset][POS_INDICATOR]] 
-            fpr = fp_cnt / (fp_cnt + len(neg_queries))
-            print(f"False Positive Rate: {fpr} [{fp_cnt} / ({fp_cnt} + {len(neg_queries)})]")
+            fpr = fp_cnt / len(neg_queries)
+            print(f"False Positive Rate: {fpr} [{fp_cnt} / {len(neg_queries)}]")
             
             current_result = {"dataset": dataset, "filter": filter, "bytes": config[dataset]["total_size"], "model_bytes": model_size, 
                                 "num_queries": len(query_keys), "model_accuracy": accuracy, "fpr": fpr}

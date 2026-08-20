@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 		// calculate the false positive rate
 		int total_negatives = curr_index - curr_inserts;
 		if (verbose) printf("Total false positives in query set: %d\n", fp_count);
-		double fpr = (double)fp_count / (fp_count + total_negatives);
+		double fpr = (double)fp_count / total_negatives;
 		if (verbose) printf("False positive rate: %f\n", fpr);
 
 
