@@ -4,7 +4,7 @@
 extern "C" {
 
 struct WrappedStackedFilter {
-    StackedFilter<BloomFilterLayer, IntElement> *filter;
+    StackedFilter<BloomFilterLayer, BigIntElement> *filter;
 };
 
 WrappedStackedFilter *StackedFilterCreate(size_t total_size,
@@ -15,8 +15,8 @@ WrappedStackedFilter *StackedFilterCreate(size_t total_size,
                                    const double *cdf,
                                    size_t cdf_size,
                                    double insert_capacity) {
-    std::vector<IntElement> positive_vec;
-    std::vector<IntElement> negative_vec;
+    std::vector<BigIntElement> positive_vec;
+    std::vector<BigIntElement> negative_vec;
     std::vector<double> cdf_vec;
 
     for (size_t i = 0; i < num_positives; i++) {
@@ -29,7 +29,7 @@ WrappedStackedFilter *StackedFilterCreate(size_t total_size,
         cdf_vec.push_back(cdf[i]);
     }
     WrappedStackedFilter *wrapped_filter = new WrappedStackedFilter;
-    wrapped_filter->filter = new StackedFilter<BloomFilterLayer, IntElement>(
+    wrapped_filter->filter = new StackedFilter<BloomFilterLayer, BigIntElement>(
             total_size, positive_vec, negative_vec, cdf_vec, insert_capacity);
     return wrapped_filter;
 }

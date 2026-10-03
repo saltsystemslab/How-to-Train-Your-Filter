@@ -33,10 +33,10 @@ dataset_sizes = {"shalla": [4280640, 4807488, 5334336, 5861184, 6388032, 6914880
                  "caida": [2144675, 2408635, 2672595, 2936555, 3200515, 3464475, 3728435]}
 
 # the number of queries performed in the one-pass experiments for each dataset
-one_pass_sizes = {"url": 162798, "shalla": 3905928, "ember": 800000, "caida": 8493974}
+one_pass_sizes = {"url": 162796, "shalla": 3905928, "ember": 800000, "caida": 8493974}
 
 # the number of positive elements in each dataset
-dataset_pos = {"ember": 800000, "url": 55681, "shalla": 2926705, "caida": 1196194}
+dataset_pos = {"ember": 800000, "url": 55679, "shalla": 2926705, "caida": 1196194}
 
 plt.rcParams['text.usetex'] = False
 
@@ -54,7 +54,35 @@ ADVERSARIAL_SIZES = {"url": 77672, "ember": 606338, "shalla": 4807488, "caida": 
 construction_sizes = {"url": 69160, "ember": 539890, "shalla": 4280640, "caida": 2144675}
 
 
-def plot_fpr_space_tradeoff(learned_filename: str, adaptive_filename: str, stacked_filename:str, num_queries=[10000000], learned_filters=None):
+def read_filter_results(filename: str, filter_name: str):
+    """
+    Reads the rows for one filter from a combined results csv written by the generic experiment harnesses
+    (adaptiveqf/test/test_*_generic.c), expanding its params column (e.g. "q=16;r=5") into separate columns.
+
+    Parameters
+    ----------
+    filename : str
+        Relative path of the combined csv file storing results for every filter.
+    filter_name : str
+        Name of the filter whose rows to keep (i.e. aqf or stacked).
+
+    Returns
+    -------
+    A DataFrame with the filter's rows. When timing columns are present, insert_time (filter construction
+    without auxiliary structures) and map_time (auxiliary structures, e.g. the AQF reverse map) are added.
+    """
+    df = pd.read_csv(filename)
+    df = df[df['filter'] == filter_name].copy()
+    params = df['params'].str.split(';').apply(lambda kvs: dict(kv.split('=') for kv in kvs))
+    for key in sorted({k for p in params for k in p}):
+        df[key] = pd.to_numeric(params.apply(lambda p: p.get(key)))
+    if 'build_time' in df:
+        df['insert_time'] = df['build_time'] - df['aux_build_time']
+        df['map_time'] = df['aux_build_time']
+    return df
+
+
+def plot_fpr_space_tradeoff(learned_filename: str, filter_filename: str, num_queries=[10000000], learned_filters=None):
     """
     For the learned, stacked, and adaptive filters, saves pdf figures plotting size vs fpr
     on different datasets (url, ember, shalla, caida) and static workloads (one-pass, uniform, Zipfian).
@@ -63,10 +91,8 @@ def plot_fpr_space_tradeoff(learned_filename: str, adaptive_filename: str, stack
     ----------
     learned_filename : str
         Relative path of csv file storing learned filter results.
-    adaptive_filename : str
-        Relative path of csv file storing adaptive filter results.
-    stacked_filename : str
-        Relative path of csv file storing stacked filter results.
+    filter_filename : str
+        Relative path of the combined csv file storing adaptive and stacked filter results.
     num_queries : List(int)
         List of different numbers of queries used in experiments to plot.
     learned_filters : List(str)
@@ -78,8 +104,8 @@ def plot_fpr_space_tradeoff(learned_filename: str, adaptive_filename: str, stack
     """
     # first, grab the data from the learned results, and separate the data based on the filter
     learned_df = pd.read_csv(learned_filename)
-    adaptive_df = pd.read_csv(adaptive_filename)
-    stacked_df = pd.read_csv(stacked_filename)
+    adaptive_df = read_filter_results(filter_filename, 'aqf')
+    stacked_df = read_filter_results(filter_filename, 'stacked')
     if learned_filters is None:
         learned_filters = {"plbf", "adabf"}
     unique_datasets = ["url", "ember", "shalla", "caida"]
@@ -267,7 +293,7 @@ def plot_model_degradation(learned_filename: str):
     plt.savefig(f'../results/figures/combined_degrad_10M_.pdf')
     plt.clf()
 
-def plot_adversarial(learned_filename: str, adaptive_filename: str, stacked_filename: str, learned_filters=None):
+def plot_adversarial(learned_filename: str, filter_filename: str, learned_filters=None):
     """
     For the learned, stacked, and adaptive filters, saves a figure plotting fpr vs the proportion of adversarial
     queries included in the experimental workload.
@@ -276,10 +302,8 @@ def plot_adversarial(learned_filename: str, adaptive_filename: str, stacked_file
     ----------
     learned_filename : str
         Relative path of csv file storing learned filter results.
-    adaptive_filename : str
-        Relative path of csv file storing adaptive filter results.
-    stacked_filename : str
-        Relative path of csv file storing stacked filter results.
+    filter_filename : str
+        Relative path of the combined csv file storing adaptive and stacked filter results.
     learned_filters : List(str)
         Optional list of learned filters to only represent in the figures (i.e. plbf or adabf).
         
@@ -288,8 +312,8 @@ def plot_adversarial(learned_filename: str, adaptive_filename: str, stacked_file
     No return value: instead, saves the figure to the '../results/figures/learned' folder.
     """
     learned_df = pd.read_csv(learned_filename)
-    adaptive_df = pd.read_csv(adaptive_filename)
-    stacked_df = pd.read_csv(stacked_filename)
+    adaptive_df = read_filter_results(filter_filename, 'aqf')
+    stacked_df = read_filter_results(filter_filename, 'stacked')
     if learned_filters is None:
         learned_filters = {"plbf", "adabf"}
     unique_datasets = ["url", "ember", "shalla", "caida"]
@@ -395,7 +419,7 @@ def plot_adversarial(learned_filename: str, adaptive_filename: str, stacked_file
     plt.savefig(f'../results/figures/combined_fpr_adversarial_{num_queries/1000000}M.pdf')
     plt.clf()
     
-def plot_construction_times(learned_filename: str, adaptive_filename: str, stacked_filename: str):
+def plot_construction_times(learned_filename: str, filter_filename: str):
     """
     For the learned, stacked, and adaptive filters, saves a figure plotting a broken-axis stacked bar chart
     representing the filter construction times, with each bar component corresponding to a different
@@ -406,10 +430,8 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, stack
     ----------
     learned_filename : str
         Relative path of csv file storing learned filter results.
-    adaptive_filename : str
-        Relative path of csv file storing adaptive filter results.
-    stacked_filename : str
-        Relative path of csv file storing stacked filter results.
+    filter_filename : str
+        Relative path of the combined csv file storing adaptive and stacked filter results.
         
     Returns
     -------
@@ -417,8 +439,8 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, stack
     """
     # first establish the categories for the construction
     learned_df = pd.read_csv(learned_filename)
-    adaptive_df = pd.read_csv(adaptive_filename)
-    stacked_df = pd.read_csv(stacked_filename)
+    adaptive_df = read_filter_results(filter_filename, 'aqf')
+    stacked_df = read_filter_results(filter_filename, 'stacked')
     learned_categories = ['Model Training', 'Threshold Finding', 'Filter Inserts']
     adaptive_categories = ['Filter Inserts', 'Reverse Map Updates']
     stacked_categories = ['Opt. & Inserts']
@@ -559,7 +581,7 @@ def plot_construction_times(learned_filename: str, adaptive_filename: str, stack
     plt.savefig(f'../results/figures/combined_const_with_prop.pdf', bbox_inches='tight')
     plt.clf()
 
-def plot_query_times(learned_filename: str, adaptive_filename: str, stacked_filename:str):
+def plot_query_times(learned_filename: str, filter_filename: str):
     """
     For the learned, stacked, and adaptive filters, saves a figure plotting a broken-axis stacked bar chart
     representing the filter query times, with each bar component corresponding to a different
@@ -570,10 +592,8 @@ def plot_query_times(learned_filename: str, adaptive_filename: str, stacked_file
     ----------
     learned_filename : str
         Relative path of csv file storing learned filter results.
-    adaptive_filename : str
-        Relative path of csv file storing adaptive filter results.
-    stacked_filename : str
-        Relative path of csv file storing stacked filter results.
+    filter_filename : str
+        Relative path of the combined csv file storing adaptive and stacked filter results.
         
     Returns
     -------
@@ -581,8 +601,8 @@ def plot_query_times(learned_filename: str, adaptive_filename: str, stacked_file
     """
     # first establish the categories for the queries
     plbf_df = pd.read_csv(learned_filename)
-    adaptive_df = pd.read_csv(adaptive_filename)
-    stacked_df = pd.read_csv(stacked_filename)
+    adaptive_df = read_filter_results(filter_filename, 'aqf')
+    stacked_df = read_filter_results(filter_filename, 'stacked')
     learned_categories = ['Score Inference', 'Filter Query']
     adaptiveqf_categories = ['Filter Query', 'Reverse Map Updates']
     stacked_categories = ['Filter Query']
@@ -734,10 +754,6 @@ def plot_changing_model_exp(learned_filepath: str):
     ----------
     learned_filename : str
         Relative path of csv file storing learned filter results.
-    adaptive_filename : str
-        Relative path of csv file storing adaptive filter results.
-    stacked_filename : str
-        Relative path of csv file storing stacked filter results.
         
     Returns
     -------
@@ -794,7 +810,7 @@ def plot_changing_model_exp(learned_filepath: str):
     plt.savefig(f'../results/figures/combined_changing_model.pdf')
     plt.clf()
 
-def plot_dynamic_exp(learned_filepath : str, adaptive_filepath : str, stacked_filepath : str, learned_filters=None, unique_datasets=None, num_queries=10000000, output_name="combined_fpr_dynamic.pdf"):
+def plot_dynamic_exp(learned_filepath : str, filter_filepath : str, learned_filters=None, unique_datasets=None, num_queries=10000000, output_name="combined_fpr_dynamic.pdf"):
     """
     For the learned, stacked, and adaptive filters, saves a figure plotting fpr vs query number,
     where periodic shuffling of the dataset is performed as the filters progress through the query set.
@@ -805,10 +821,8 @@ def plot_dynamic_exp(learned_filepath : str, adaptive_filepath : str, stacked_fi
     ----------
     learned_filename : str
         Relative path of csv file storing learned filter results.
-    adaptive_filename : str
-        Relative path of csv file storing adaptive filter results.
-    stacked_filename : str
-        Relative path of csv file storing stacked filter results.
+    filter_filepath : str
+        Relative path of the combined csv file storing adaptive and stacked filter results.
     learned filters : List(str)
         Optional list of learned filters to only include in figure (i.e. plbf or adabf)
     unique_datasets : List(str)
@@ -823,8 +837,8 @@ def plot_dynamic_exp(learned_filepath : str, adaptive_filepath : str, stacked_fi
     No return value: instead, saves the figure to the '../results/figures/learned' folder.
     """
     learned_df = pd.read_csv(learned_filepath)
-    adaptive_df = pd.read_csv(adaptive_filepath)
-    stacked_df = pd.read_csv(stacked_filepath)
+    adaptive_df = read_filter_results(filter_filepath, 'aqf')
+    stacked_df = read_filter_results(filter_filepath, 'stacked')
     if learned_filters is None:
         learned_filters = {"plbf", "adabf"}
     if unique_datasets is None:
@@ -842,7 +856,8 @@ def plot_dynamic_exp(learned_filepath : str, adaptive_filepath : str, stacked_fi
         adaptive_data_for_dataset = data_for_dataset[data_for_dataset['num_queries'] == num_queries]
         
         data_for_dataset = learned_df[learned_df['dataset'] == dataset]
-        query_counts = sorted(data_for_dataset['curr_query'].unique())
+        data_for_num_queries = data_for_dataset[data_for_dataset['num_queries'] == num_queries]
+        query_counts = sorted(data_for_num_queries['curr_query'].unique())
 
         # now for each filter size, get the median, min, and max
         for filter in learned_filters:
@@ -850,7 +865,6 @@ def plot_dynamic_exp(learned_filepath : str, adaptive_filepath : str, stacked_fi
                 print(f"{filter} not implemented...")
                 continue
             for model in fpr_models:
-                data_for_num_queries = data_for_dataset[data_for_dataset['num_queries'] == num_queries]
                 data_for_filter = data_for_num_queries[(data_for_num_queries['filter'] == filter) & (data_for_num_queries['model_type'] == models[model])]
                 if len(data_for_filter) == 0:
                     print(f"No data found for {filter}-{dataset}-{models[model]}...")
@@ -906,17 +920,17 @@ def plot_dynamic_exp(learned_filepath : str, adaptive_filepath : str, stacked_fi
 
 
 if __name__ == "__main__":
-    plot_fpr_space_tradeoff('../results/learned/overall_results_with_model_scores.csv', '../results/aqf/aqf_results.csv', '../results/stacked/stacked_results.csv')
-    plot_adversarial('../results/learned/overall_advers_with_model_scores.csv', '../results/aqf/aqf_advers_results.csv', '../results/stacked/stacked_advers_results.csv')
+    plot_fpr_space_tradeoff('../results/learned/overall_results_with_model_scores.csv', '../results/distribution_results.csv')
+    plot_adversarial('../results/learned/overall_advers_with_model_scores.csv', '../results/advers_results.csv')
     # print("construction: ")
-    # plot_construction_times('../results/learned/results_with_model_builtin.csv', '../results/aqf/aqf_results.csv', '../results/stacked/stacked_results.csv')
+    # plot_construction_times('../results/learned/results_with_model_builtin.csv', '../results/distribution_results.csv')
     # print("query: ")
-    # plot_query_times('../results/learned/results_with_model_builtin.csv', '../results/aqf/aqf_results.csv', '../results/stacked/stacked_results.csv')
+    # plot_query_times('../results/learned/results_with_model_builtin.csv', '../results/distribution_results.csv')
     # plot_model_degradation('../results/learned/degrad_results_with_model_scores.csv')
     # plot_changing_model_exp('../results/learned/changing_model_size.csv')
-    plot_dynamic_exp('../results/learned/dynamic_results_with_model_scores.csv', '../results/aqf/aqf_results_dynamic.csv', '../results/stacked/stacked_results_dynamic.csv',
+    plot_dynamic_exp('../results/learned/dynamic_results_with_model_scores.csv', '../results/dynamic_results.csv',
                      learned_filters=["plbf", "adabf"], unique_datasets=["url", "ember", "caida"],
                      output_name="combined_fpr_dynamic.pdf")
-    plot_dynamic_exp('../results/learned/dynamic_results_with_model_rebuild.csv', '../results/aqf/aqf_results_dynamic.csv', '../results/stacked/stacked_results_dynamic.csv',
+    plot_dynamic_exp('../results/learned/dynamic_results_with_model_rebuild.csv', '../results/dynamic_results.csv',
                      learned_filters=["plbf", "adabf"], unique_datasets=["url", "ember", "caida"],
                      output_name="combined_fpr_dynamic_rebuild.pdf")

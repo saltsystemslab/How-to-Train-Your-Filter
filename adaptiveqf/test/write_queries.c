@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     
     printf("Num queries: %i\n", num_queries);
     char output_name[100];
-    sprintf(output_name, "../data/%s_%dM_%s.bin", ((argc > 4) ? "zipf_" : ""), num_queries / 10000000, dataset);
+    sprintf(output_name, "../data/%s_%dM_%s.bin", ((argc > 4) ? "zipf" : "unif"), num_queries / 1000000, dataset);
 
     FILE *f = fopen(output_name, "wb");
         for (int j = 0; j < num_queries; j++) {

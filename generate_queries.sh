@@ -15,7 +15,7 @@ declare -A dataset_paths=(
 
 # taken from counting properly-formatted non-header rows in datasets
 declare -A dataset_rows=(
-    ["url"]=162798
+    ["url"]=162796
     ["ember"]=800000
     ["shalla"]=3905928
     ["caida"]=8493974
@@ -43,4 +43,9 @@ done
 cd "../$LEARNED_DIR"
 python3 utils/convert_query_binaries.py
 echo "finished converting binaries"
+# one-pass query orderings used by the stacked filter one-pass test
+cd utils
+python3 onepass_queries.py
+echo "finished writing one-pass query files"
+cd ..
 cd ..

@@ -30,7 +30,7 @@
 int set_update(set_node *set, int set_len, uint64_t key, uint64_t value) {
 	uint64_t hash = MurmurHash64A((void*)(&key), sizeof(key), HASH_SET_SEED);
 	set_node *ptr = &set[hash % set_len];
-	if (!ptr->key) {
+	if (!ptr->occupied) {
 		return 0;
 	}
 	else {
@@ -49,9 +49,10 @@ int set_update(set_node *set, int set_len, uint64_t key, uint64_t value) {
 int set_insert(set_node *set, int set_len, uint64_t key, uint64_t value) {
 	uint64_t hash = MurmurHash64A((void*)(&key), sizeof(key), HASH_SET_SEED);
 	set_node *ptr = &set[hash % set_len];
-	if (!ptr->key) {
+	if (!ptr->occupied) {
 		ptr->key = key;
 		ptr->value = value;
+		ptr->occupied = 1;
     }
 	else {
 		// if the slot is taken, do a chained insert
@@ -66,6 +67,7 @@ int set_insert(set_node *set, int set_len, uint64_t key, uint64_t value) {
 		node->next = NULL;
 		node->key = key;
 		node->value = value;
+		node->occupied = 1;
 	}
 	return 1;
 }
@@ -74,7 +76,7 @@ int set_insert(set_node *set, int set_len, uint64_t key, uint64_t value) {
 int set_query(set_node *set, int set_len, uint64_t key, uint64_t *value) {
 	uint64_t hash = MurmurHash64A((void*)(&key), sizeof(key), HASH_SET_SEED);
 	set_node *ptr = &set[hash % set_len];
-	if (!ptr->key) {
+	if (!ptr->occupied) {
 		return 0;
 	}
 	else {
@@ -97,7 +99,7 @@ int set_query(set_node *set, int set_len, uint64_t key, uint64_t *value) {
 int set_delete(set_node *set, int set_len, uint64_t key) {
 	uint64_t hash = MurmurHash64A((void*)(&key), sizeof(key), HASH_SET_SEED);
 	set_node *ptr = &set[hash % set_len];
-	if (!ptr->key) {
+	if (!ptr->occupied) {
         // fprintf(stderr, "nothing to delete\n");
 		return 0;
 	}
@@ -107,10 +109,13 @@ int set_delete(set_node *set, int set_len, uint64_t key) {
 			ptr->key = ptr->next->key;
 			ptr->value = ptr->next->value;
 			ptr->next = ptr->next->next;
+			ptr->occupied = 1;
 			free(temp);
 		}
 		else {
 			ptr->key = 0;
+			ptr->value = 0;
+			ptr->occupied = 0;
 		}
 		return 1;
 	}
@@ -135,7 +140,7 @@ int set_delete(set_node *set, int set_len, uint64_t key) {
 int set_free(set_node *set, int set_len) {
 	for (int i = 0; i < set_len; i++) {
 		set_node *ptr = &set[i];
-		if (!ptr->key) continue;
+		if (!ptr->occupied) continue;
 		while (ptr->next) {
 			set_node *temp = ptr->next;
 			ptr->next = ptr->next->next;
@@ -304,20 +309,18 @@ int read_file(char *filename, int obj_index, int label_index, char *buffer, long
 		if (strcmp(filename, URL_PATH) == 0) {
 			if (strstr(buffer, ",malicious,")) {
 				char *url;
+				char url_buf[URL_SIZE];
 				if (buffer[0] == '"') {
-					char url[URL_SIZE];
 					int url_index = 1;
 					while (buffer[url_index] != '"') url_index++;
-					strncpy(url, buffer + 1, url_index-1);
-					url[url_index-1] = '\0';
-					if (strlen(url) > 0) {
-						insert_set[curr_inserts++] = hash_str(url);
-					}
+					strncpy(url_buf, buffer + 1, url_index-1);
+					url_buf[url_index-1] = '\0';
+					url = url_buf;
 				} else {
 					// otherwise, simply dividing the str with "," gives the url
 					url = strtok(buffer, ",");
 				}
-				if (url != NULL) {
+				if (url != NULL && strlen(url) > 0) {
 					insert_set[curr_inserts++] = hash_str(url);
 				}
 			} 
@@ -385,7 +388,17 @@ int read_queries(char *indexfilename, char *filename, int obj_index, int label_i
 			} else {
 				query_labels[curr_query] = 0;
 			}
-			char *url = strtok(buffer, ",");
+			char *url;
+			char url_buf[URL_SIZE];
+			if (buffer[0] == '"') {
+				int url_index = 1;
+				while (buffer[url_index] != '"') url_index++;
+				strncpy(url_buf, buffer + 1, url_index-1);
+				url_buf[url_index-1] = '\0';
+				url = url_buf;
+			} else {
+				url = strtok(buffer, ",");
+			}
 			query_set[curr_query] = hash_str(url);
 		} else {
 			char *label = NULL;
@@ -453,4 +466,147 @@ uint64_t hash_str(char *str) {
 		hash = ((hash << 5) + hash) + c;
 	}
 	return hash;
+}
+
+// For the given file, reads positives into insert_set and negatives into negative_set, along with file offsets (per row).
+int read_file_with_negatives(char *filename, int obj_index, int label_index, char *buffer, long *offsets,
+							 uint64_t *insert_set, int *num_inserts, uint64_t *negative_set, int *num_negatives) {
+	FILE * file_ptr = fopen(filename, "r");
+	if (NULL == file_ptr) {
+		printf("file can't be opened \n");
+		return 0;
+	}
+	int curr_inserts = 0;
+	int curr_neg = 0;
+	int curr_index = 0;
+	fgets(buffer, READ_SIZE, file_ptr); // get rid of the first header row
+	offsets[curr_index] = ftell(file_ptr);
+	while (fgets(buffer, READ_SIZE, file_ptr)) {
+		if (strlen(buffer) == 0) {
+			continue; // skip blank lines
+		}
+		if (strcmp(filename, URL_PATH) == 0) {
+			char *malicious = strstr(buffer, ",malicious,");
+			char *url;
+			char url_buf[READ_SIZE];
+			if (buffer[0] == '"') {
+				// if the first character is a ", it means that the element is a weirdly-formatted url
+				int url_index = 1;
+				while (buffer[url_index] != '"') url_index++;
+				strncpy(url_buf, buffer + 1, url_index-1);
+				url_buf[url_index-1] = '\0';
+				url = url_buf;
+			} else {
+				// otherwise, simply dividing the str with "," gives the url
+				url = strtok(buffer, ",");
+			}
+			if (url != NULL) {
+				if (malicious) {
+					insert_set[curr_inserts++] = hash_str(url);
+				} else {
+					negative_set[curr_neg++] = hash_str(url);
+				}
+			}
+		} else {
+			// normally formatted with 1 as a positive indicator
+			char *label = NULL;
+			char *item = NULL;
+			char *token = strtok(buffer, ",");
+			int count = 0;
+			while (token != NULL) {
+				if (count == label_index) {
+					label = token;
+				} else if (count == obj_index) {
+					item = token;
+				}
+				token = strtok(NULL, ",");
+				count++;
+			}
+			char *item_copy = strdup(item);
+			if (label != NULL && atoi(label) == 1) {
+				insert_set[curr_inserts++] = hash_str(item_copy);
+			} else {
+				negative_set[curr_neg++] = hash_str(item_copy);
+			}
+			free(item_copy);
+		}
+		curr_index++;
+		offsets[curr_index] = ftell(file_ptr);
+	}
+	fclose(file_ptr);
+	*num_inserts = curr_inserts;
+	*num_negatives = curr_neg;
+	return 1;
+}
+
+// Collects the unique negative keys in the first num_check queries, sorted by descending frequency, along with their
+// cumulative frequency distribution. Same logic as the stacked filter experiments.
+int build_training_negatives(uint64_t *query_set, uint64_t *query_labels, size_t num_queries, int num_check,
+							 uint64_t **sorted_negatives_out, double **cdf_out) {
+	// create a map of key to count, which we later convert to an array for sorting.
+	set_node *count_map = calloc(num_queries, sizeof(set_node));
+	if (!count_map) {
+		fprintf(stderr, "calloc failed for count_map\n");
+		exit(EXIT_FAILURE);
+	}
+	uint64_t value;
+	int num_negative = 0;
+	for (int i = 0; i < num_check; i++) {
+		if (query_labels[i] == 0) {
+			if (set_query(count_map, num_queries, query_set[i], &value)) {
+				// key already exists, so just increment count
+				set_update(count_map, num_queries, query_set[i], value + 1);
+			} else {
+				// key doesn't exist, start a new count
+				set_insert(count_map, num_queries, query_set[i], 1);
+				num_negative++;
+			}
+		}
+	}
+	fprintf(stderr, "found %d unique negative queries in first %d queries\n", num_negative, num_check);
+
+	// now, convert the map to an array for sorting
+	struct key_count *count_array = malloc(num_negative * sizeof(struct key_count));
+	if (!count_array) {
+		fprintf(stderr, "malloc failed for count_array\n");
+		exit(EXIT_FAILURE);
+	}
+	int index = 0;
+	for (size_t i = 0; i < num_queries; i++) {
+		set_node *ptr = &count_map[i];
+		while (ptr) {
+			if (ptr->occupied) {
+				count_array[index].key = ptr->key;
+				count_array[index].count = ptr->value;
+				index++;
+			}
+			ptr = ptr->next;
+		}
+	}
+	set_free(count_map, num_queries); // also frees count_map itself
+
+	// now, sort the array in descending order by count
+	qsort(count_array, num_negative, sizeof(struct key_count), key_count_comp);
+
+	uint64_t *sorted_negatives = malloc(num_negative * sizeof(uint64_t));
+	double *cdf = malloc(num_negative * sizeof(double));
+	if (!sorted_negatives || !cdf) {
+		fprintf(stderr, "malloc failed for sorted_negatives or cdf\n");
+		exit(EXIT_FAILURE);
+	}
+	uint64_t total_count = 0;
+	for (int i = 0; i < num_negative; i++) {
+		sorted_negatives[i] = count_array[i].key;
+		total_count += count_array[i].count;
+	}
+	double sum = 0;
+	for (int i = 0; i < num_negative; i++) {
+		sum += (double)count_array[i].count / (double)total_count;
+		cdf[i] = sum;
+	}
+	free(count_array);
+
+	*sorted_negatives_out = sorted_negatives;
+	*cdf_out = cdf;
+	return num_negative;
 }

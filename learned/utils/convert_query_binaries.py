@@ -15,7 +15,7 @@ def hash_to_range(elements, a, b, p, max):
 dataset_info = {
     "url": {
         "dataset": "url",
-        "rows": 162798,
+        "rows": 162796,
         "p": 193939,
         "filenames": ["zipf_10M_url", "unif_10M_url"]
     },
@@ -33,7 +33,7 @@ dataset_info = {
     },
     "caida": {
         "dataset": "caida",
-        "rows": 8493975,
+        "rows": 8493974,
         "p": 7774777,
         "filenames": ["zipf_10M_caida", "unif_10M_caida"]
     }

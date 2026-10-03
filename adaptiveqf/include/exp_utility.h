@@ -26,6 +26,7 @@ struct _set_node {
         struct _set_node *next;
         uint64_t key;
 	uint64_t value;
+	int occupied;
 } typedef set_node;
 
 // Struct to hold key and count pairs
@@ -79,6 +80,16 @@ int read_file(char *filename, int obj_index, int label_index, char *buffer, long
 
 // For the given file, reads the data into arrays of file offsets (per row) and query elements and query labels, the number of positive elements, and the number of queries.
 int read_queries(char *indexfilename, char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *query_set, uint64_t *query_labels, int *pos_count, int *query_count);
+
+// For the given file, reads positives into insert_set and negatives into negative_set, along with file offsets
+// (per row). Used by experiments that swap elements between the two sets (e.g. the dynamic experiment).
+int read_file_with_negatives(char *filename, int obj_index, int label_index, char *buffer, long *offsets,
+							 uint64_t *insert_set, int *num_inserts, uint64_t *negative_set, int *num_negatives);
+
+// Collects the unique negative keys in the first num_check queries, sorted by descending frequency, along with
+// their cumulative frequency distribution. Returns the number of unique negatives; the caller frees both arrays.
+int build_training_negatives(uint64_t *query_set, uint64_t *query_labels, size_t num_queries, int num_check,
+							 uint64_t **sorted_negatives_out, double **cdf_out);
 
 // Utility functions ------------------------------------------------
 
