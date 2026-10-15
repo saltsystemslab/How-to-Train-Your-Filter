@@ -22,6 +22,7 @@ test_advers_dist.c and test_advers_dist_stacked.c.
 #include "include/rand_util.h"
 #include "include/exp_utility.h"
 #include "include/filter_iface.h"
+#include "include/harness_output.h"
 
 #define MAX_DATA_LINES 10000000
 #define OUTPUT_PATH "../results/advers_results.csv"
@@ -67,10 +68,14 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+	// row index of each insertion and query, used to look up features for filters that use them
+	int *insert_rows = ops->uses_features ? malloc(MAX_DATA_LINES * sizeof(int)) : NULL;
+	int *query_rows = ops->uses_features ? malloc(num_queries * sizeof(int)) : NULL;
+
 	int num_inserts;
 	int read_result = read_file(filename, obj_index, label_index,
 								buffer, offsets, insert_set,
-								&num_inserts);
+								&num_inserts, insert_rows);
 	if (!read_result) {
 		printf("Insertion reading failed\n");
 		return EXIT_FAILURE;
@@ -92,15 +97,45 @@ int main(int argc, char **argv)
 	int pos_count = 0;
 	if (verbose) fprintf(stderr, "Processing queries\n");
 	int query_read_result = read_queries(indexfilename, filename, obj_index, label_index,
-										buffer, offsets, query_set, query_labels,
-										&pos_count, &total_queries);
+										buffer, offsets, query_set, query_labels, num_queries,
+										&pos_count, &total_queries, query_rows);
 	if (!query_read_result) {
 		printf("Query reading failed\n");
 		return EXIT_FAILURE;
 	}
 	if (verbose) fprintf(stderr, "finished reading %d queries with %d positives\n", total_queries, pos_count);
+	if ((size_t)total_queries < num_queries) {
+		// the index file is shorter than requested: only query what was read
+		fprintf(stderr, "index file only has %d queries, running %d instead of %zu\n", total_queries, total_queries, num_queries);
+		num_queries = total_queries;
+	}
 
-	struct timeval timecheck;
+	// load the feature vector of every row for filters that use them, checking that the harness's
+	// rows line up with the exported features
+	float *row_features = NULL, *positive_features = NULL;
+	size_t num_features = 0, num_feature_rows = 0;
+	char feature_dir[256] = "";
+	if (ops->uses_features) {
+		snprintf(feature_dir, sizeof(feature_dir), "../data/cascaded/%s", dataset);
+		char path[512];
+		size_t num_rows = 0, label_rows = 0, label_cols = 0;
+		snprintf(path, sizeof(path), "%s/features.bin", feature_dir);
+		row_features = map_float_matrix(path, &num_rows, &num_features);
+		num_feature_rows = num_rows;
+		snprintf(path, sizeof(path), "%s/labels.bin", feature_dir);
+		float *row_labels = load_float_matrix(path, &label_rows, &label_cols);
+		if (!row_features || !row_labels || label_rows != num_rows
+			|| !check_row_labels(row_labels, num_rows, insert_rows, NULL, num_inserts, "insertion")
+			|| !check_row_labels(row_labels, num_rows, query_rows, query_labels, num_queries, "query")) {
+			fprintf(stderr, "couldn't load features for %s from %s (see learned/utils/export_cascaded_inputs.py)\n", ops->name, feature_dir);
+			return EXIT_FAILURE;
+		}
+		free(row_labels);
+		positive_features = malloc((size_t)num_inserts * num_features * sizeof(float));
+		gather_rows(row_features, num_features, insert_rows, num_inserts, positive_features);
+		if (verbose) fprintf(stderr, "loaded %zu features for each of %zu rows from %s\n", num_features, num_rows, feature_dir);
+	}
+
 	for (int i = 0; i < num_trials; i++) {
 		for (double freq = 0.02; freq < 0.11; freq += 0.02) {
 			time_t seed = time(NULL);
@@ -122,6 +157,9 @@ int main(int argc, char **argv)
 				.num_positives = num_inserts,
 				.argc = filter_argc,
 				.argv = filter_argv,
+				.positive_features = positive_features,
+				.num_features = (int)num_features,
+				.feature_dir = feature_dir,
 			};
 			uint64_t *train_negatives = NULL;
 			double *train_cdf = NULL;
@@ -134,20 +172,22 @@ int main(int argc, char **argv)
 			}
 
 			// build the filter
-			gettimeofday(&timecheck, NULL);
-			uint64_t start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec, end_time;
+			uint64_t start_time = TIMED_NOW(), end_time;
 			void *filter = ops->create(&ctx);
-			gettimeofday(&timecheck, NULL);
-			end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
-			uint64_t build_time = end_time - start_time;
+			end_time = TIMED_NOW();
+			uint64_t config_time = ops->config_time ? ops->config_time(filter) : 0;
+			uint64_t sizing_time = ops->sizing_time ? ops->sizing_time(filter) : 0;
+			uint64_t build_time = end_time - start_time - config_time - sizing_time;
 
 			// perform queries
 			int fp_count = 0;
+			uint64_t fp_from_model = 0, fp_from_backup = 0;
 			uint64_t total_query_time = 0;
 			uint64_t total_adapt_time = 0;
 			int num_learn = num_queries / 2; // how many queries to use for learning false positives
 			int num_adv_learned = 0; // how many false positives were learned
 			uint64_t *adv_list = malloc(num_queries * sizeof(uint64_t)); // the list of learned false positives
+			int *adv_rows = malloc(num_queries * sizeof(int)); // their row indices, for filters that use features
 			int num_between_adv = (int)(num_queries/2)/(freq*num_queries);
 			int current_adv_check = 0; // counter for checking if we should do the adversarial replacement
 			int current_adv_count = 0; // tracks which adversarial query we should use as the next replacement
@@ -158,35 +198,35 @@ int main(int argc, char **argv)
 				// start with a regular query
 				query = query_set[j];
 				query_label = query_labels[j];
+				int query_row = query_rows ? query_rows[j] : -1;
 				if ((int)j > num_learn && num_adv_learned > 0) {
 					current_adv_check++;
 					if (current_adv_check == num_between_adv) {
 						// replace the current query with an adversarial query
 						query = adv_list[current_adv_count % num_adv_learned];
+						query_row = adv_rows[current_adv_count % num_adv_learned];
 						query_label = 0;
 						current_adv_count++;
 						current_adv_check = 0;
 					}
 				}
-				gettimeofday(&timecheck, NULL);
-				start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
-				int result = ops->query(filter, query);
-				gettimeofday(&timecheck, NULL);
-				end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
+				start_time = TIMED_NOW();
+				int result = ops->query(filter, query, row_features ? row_features + (size_t)query_row * num_features : NULL);
+				end_time = TIMED_NOW();
 				total_query_time += end_time - start_time;
 				if (result && query_label == 0) {
 					fp_count++;
+					count_fp_source(ops, filter, &fp_from_model, &fp_from_backup);
 					if ((int)j < num_learn) {
 						// if we're still in the learning phase, add to the list of false positives
 						adv_list[num_adv_learned] = query;
+						adv_rows[num_adv_learned] = query_row;
 						num_adv_learned++;
 					}
 					if (ops->on_false_positive) {
-						gettimeofday(&timecheck, NULL);
-						start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
+						start_time = TIMED_NOW();
 						ops->on_false_positive(filter, query);
-						gettimeofday(&timecheck, NULL);
-						end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
+						end_time = TIMED_NOW();
 						total_adapt_time += end_time - start_time;
 					}
 				}
@@ -204,21 +244,23 @@ int main(int argc, char **argv)
 			uint64_t aux_time = ops->aux_build_time ? ops->aux_build_time(filter) : 0;
 
 			FILE * outputptr;
-			outputptr = fopen(OUTPUT_PATH, "a");
-			fseek(outputptr, 0, SEEK_END);
+			outputptr = open_results_file(OUTPUT_PATH);
 			long filesize = ftell(outputptr);
 			if (filesize == 0) {
 				// File is empty, write header
-				fprintf(outputptr, "dataset,query_dist,num_queries,freq,filter,params,size,fpr,build_time,aux_build_time,amortized_query,amortized_adapt\n");
+				fprintf(outputptr, "dataset,query_dist,num_queries,freq,filter,params,size,fpr," MEASUREMENT_COLUMNS "\n");
 			}
-			fprintf(outputptr, "%s,%s,%ld,%.3f,%s,%s,%ld,%.14f,%ld,%ld,%.14f,%.14f\n",
+			char measurements[512];
+				format_measurements(measurements, sizeof(measurements), ops, filter, build_time, aux_time,
+					total_query_time, total_adapt_time, num_queries, config_time, fp_from_model, fp_from_backup);
+				fprintf(outputptr, "%s,%s,%ld,%.3f,%s,%s,%ld,%.14f,%s\n",
 					dataset, dist, num_queries, freq, ops->name, params, ops->size_bytes(filter), fpr,
-					build_time, aux_time,
-					(double)total_query_time/num_queries, (double)total_adapt_time/num_queries);
+					measurements);
 			fclose(outputptr);
 
 			ops->destroy(filter);
 			free(adv_list);
+			free(adv_rows);
 			free(train_negatives);
 			free(train_cdf);
 		}
@@ -226,6 +268,10 @@ int main(int argc, char **argv)
 	free(query_set);
 	free(query_labels);
 	free(insert_set);
+	free(insert_rows);
+	free(query_rows);
+	unmap_float_matrix(row_features, num_feature_rows, num_features);
+	free(positive_features);
 	free(offsets);
 	free(buffer);
 	return 0;

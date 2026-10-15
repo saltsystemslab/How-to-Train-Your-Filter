@@ -15,6 +15,7 @@ extern "C" {
     typedef struct WrappedStackedFilter WrappedStackedFilter;
 #endif
 
+// optimize_ns (if not NULL) receives the time spent choosing the layers; insert_capacity must be 0.
 WrappedStackedFilter *StackedFilterCreate(size_t total_size,
                                    const void *positives,
                                    size_t num_positives,
@@ -22,7 +23,19 @@ WrappedStackedFilter *StackedFilterCreate(size_t total_size,
                                    size_t num_negatives,
                                    const double *cdf,
                                    size_t cdf_size,
-                                   double insert_capacity);
+                                   double insert_capacity,
+                                   uint64_t *optimize_ns);
+
+// Expected FPR of a stacked filter of total_size bits, as predicted by the optimizer that the size
+// constructor uses to choose its layers (over the query distribution described by cdf). Does not build a filter.
+double StackedFilterExpectedFPR(size_t total_size,
+                                size_t num_positives,
+                                const double *cdf,
+                                size_t cdf_size,
+                                double insert_capacity);
+
+// Actual size of the filter's layers, in bits.
+size_t StackedFilterGetSize(WrappedStackedFilter *wrapped_filter);
 
 void StackedFilterDestroy(WrappedStackedFilter *wrapped_filter);
 

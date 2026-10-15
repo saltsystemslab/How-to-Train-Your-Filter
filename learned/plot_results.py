@@ -12,9 +12,9 @@ from matplotlib.ticker import FormatStrFormatter
 
 # unique colors/markers to assign each filter variant, staying constant across all graphs
 FILTER_COLORS = {"plbf-forest": "blue", "plbf-tree": "cornflowerblue", "plbf-logistic": "darkturquoise",
-                 "adabf-forest": "green", "adabf-tree": "yellowgreen", "adabf-logistic": "limegreen",
-                 "stacked": "blueviolet", "aqf": "orange"}
-FILTER_MARKERS = {"plbf-forest": "^", "plbf-tree": "<", "plbf-logistic": ">",
+                 "plbf-xgboost": "#1A5FD6", "adabf-forest": "green", "adabf-tree": "yellowgreen", "adabf-logistic": "limegreen",
+                 "stacked": "#1DB954", "aqf": "#FF8C1A"}
+FILTER_MARKERS = {"plbf-forest": "^", "plbf-tree": "<", "plbf-logistic": ">", "plbf-xgboost": "^",
                   "adabf-forest": "2", "adabf-tree": "3", "adabf-logistic": "4",
                   "stacked": "o", "aqf": "D"}
 # base filter types that are available across all experiments
@@ -36,12 +36,15 @@ dataset_sizes = {"shalla": [4280640, 4807488, 5334336, 5861184, 6388032, 6914880
 one_pass_sizes = {"url": 162796, "shalla": 3905928, "ember": 800000, "caida": 8493974}
 
 # the number of positive elements in each dataset
-dataset_pos = {"ember": 800000, "url": 55679, "shalla": 2926705, "caida": 1196194}
+dataset_pos = {"ember": 400000, "url": 55679, "shalla": 2926705, "caida": 1196194}
 
 plt.rcParams['text.usetex'] = False
 
 # the models available for each learned filter variant to use, mapping nickname to full name used when reporting experiment data
 models = {"forest": "random_forest", "tree": "decision_tree", "logistic": "logistic_regression"}
+# the model types of the sweeps rerun with CascadedLBF's PLBF (see learned/utils/prepare_sweeps.py), which
+# plot_model_degradation and plot_changing_model_exp also plot
+sweep_models = {"xgboost": "xgboost"}
 
 # which models should be included when reporting experiments describing fpr for different filters
 fpr_models = {"tree": "decision_tree"}
@@ -69,16 +72,20 @@ def read_filter_results(filename: str, filter_name: str):
     Returns
     -------
     A DataFrame with the filter's rows. When timing columns are present, insert_time (filter construction
-    without auxiliary structures) and map_time (auxiliary structures, e.g. the AQF reverse map) are added.
+    without auxiliary structures), map_time (auxiliary structures, e.g. the AQF reverse map), amortized_query
+    and amortized_adapt are added in microseconds.
     """
     df = pd.read_csv(filename)
     df = df[df['filter'] == filter_name].copy()
     params = df['params'].str.split(';').apply(lambda kvs: dict(kv.split('=') for kv in kvs))
     for key in sorted({k for p in params for k in p}):
         df[key] = pd.to_numeric(params.apply(lambda p: p.get(key)))
-    if 'build_time' in df:
-        df['insert_time'] = df['build_time'] - df['aux_build_time']
-        df['map_time'] = df['aux_build_time']
+    if 'build_time_ns' in df:
+        # times are recorded in nanoseconds; the timing plots use microseconds
+        df['insert_time'] = (df['build_time_ns'] - df['aux_build_time_ns']) / 1000
+        df['map_time'] = df['aux_build_time_ns'] / 1000
+        df['amortized_query'] = df['amortized_query_ns'] / 1000
+        df['amortized_adapt'] = df['amortized_adapt_ns'] / 1000
     return df
 
 
@@ -234,31 +241,39 @@ def plot_fpr_space_tradeoff(learned_filename: str, filter_filename: str, num_que
         plt.savefig(f'../results/figures/combined_fpr_{query_dist}_{query_num/1000000 if query_dist != "onepass" else ""}M.pdf')
         plt.clf()
 
-def plot_model_degradation(learned_filename: str):
+def plot_model_degradation(learned_filename: str, output_name: str = "combined_degrad_10M_.pdf"):
     """
     For the learned filters, saves pdf figures plotting fpr vs negative set proportion used in the model training set.
+    Plots each filter and model type in the file: the Python filters with random_forest, decision_tree and
+    logistic_regression models (run_exp_model_degrad.py), or CascadedLBF's PLBF with xgboost models (the sweeps in
+    learned/utils/prepare_sweeps.py).
 
     Parameters
     ----------
     learned_filename : str
         Relative path of csv file storing learned filter results.
+    output_name : str
+        File name of the figure, in '../results/figures'.
         
     Returns
     -------
-    No return value: instead, saves the figure to the '../results/figures/learned' folder.
+    No return value: instead, saves the figure to the '../results/figures' folder.
     """
     learned_df = pd.read_csv(learned_filename)
     datasets = ["url", "ember", "shalla", "caida"]
     learned_filters = ["plbf", "adabf"]
+    model_names = {name: model for name, model in {**models, **sweep_models}.items()
+                   if model in set(learned_df['model_type'])}
     set_sizes = [0.2, 0.4, 0.6, 0.8]
     fig, axs = plt.subplots(1, 4, figsize=(12,2), layout='constrained')
     current_count = 0
     axs[0].set_ylabel("Median FPR")
+    overall_min = None
     for dataset in datasets:
         axs[current_count].set_title(dataset)
         size_to_process = min(dataset_sizes[dataset])
         for learned_filter in learned_filters:
-            for model in models:
+            for model in model_names:
                 if learned_filter not in FILTERS:
                     print(f"{learned_filter} not implemented...")
                     continue
@@ -266,31 +281,39 @@ def plot_model_degradation(learned_filename: str):
                 data_for_num_queries = data_for_dataset[data_for_dataset['num_queries'] == 10000000]
                 data_for_query_dist = data_for_num_queries[data_for_num_queries['query_dist'] == "unif"]
                 data_for_filter = data_for_query_dist[data_for_query_dist['filter'] == learned_filter]
-                current_data = data_for_filter[(data_for_filter['bytes'] == size_to_process) & (data_for_filter['model_type'] == models[model])]
+                current_data = data_for_filter[(data_for_filter['bytes'] == size_to_process) & (data_for_filter['model_type'] == model_names[model])]
                 if len(current_data) == 0:
-                    print(f"No data found for {learned_filter}-{models[model]}...")
+                    print(f"No data found for {learned_filter}-{model_names[model]}...")
                     continue
                 # now for each filter size, get the median, min, and max 
                 meds = []
                 mins = []
                 maxes = []
                 for train_size in set_sizes:
-                    current_size_data = data_for_filter[data_for_filter['train_set_size'] == train_size]
+                    current_size_data = current_data[current_data['train_set_size'] == train_size]
                     fprs = current_size_data['fpr']
                     if len(fprs) == 0:
                         print(f"Empty: {dataset}, {learned_filter}, {train_size}")
                     meds.append(median(fprs))
                     mins.append(min(fprs))
                     maxes.append(max(fprs))
+                positive = [m for m in meds if m > 0]
+                if positive:
+                    overall_min = min(positive) if overall_min is None else min(overall_min, min(positive))
                 # now plot the data
                 axs[current_count].plot(set_sizes, meds, label=(f"{learned_filter}-{model}" if current_count == 0 else ""), color=FILTER_COLORS[f"{learned_filter}-{model}"], marker=FILTER_MARKERS[f"{learned_filter}-{model}"], markersize=9)
                 # axs[current_count].fill_between(set_sizes, mins, maxes, alpha=0.2, color=FILTER_COLORS[f"{learned_filter}-{model}"])
                 axs[current_count].set_xlabel('Training Set Proportion')
                 axs[current_count].set_yscale('log')
-                axs[current_count].set_yticks([0.0001, 0.001, 0.01, 0.1])
         current_count += 1
-    fig.legend(loc='outside center right')
-    plt.savefig(f'../results/figures/combined_degrad_10M_.pdf')
+    # the same decades as before (1e-4 to 0.1), extended down to the lowest median
+    lowest = min(-4, math.floor(math.log10(overall_min))) if overall_min else -4
+    for ax in axs:
+        ax.set_yticks([10.0 ** e for e in range(lowest, 0)])
+    # a legend only when there is more than one line to tell apart
+    if len(fig.axes[0].get_legend_handles_labels()[1]) > 1:
+        fig.legend(loc='outside center right')
+    plt.savefig(f'../results/figures/{output_name}')
     plt.clf()
 
 def plot_adversarial(learned_filename: str, filter_filename: str, learned_filters=None):
@@ -745,22 +768,29 @@ def plot_query_times(learned_filename: str, filter_filename: str):
     plt.savefig(f'../results/figures/combined_query_with_prop.pdf', bbox_inches='tight')
     plt.clf()
 
-def plot_changing_model_exp(learned_filepath: str):
+def plot_changing_model_exp(learned_filepath: str, output_name: str = "combined_changing_model.pdf"):
     """
     For the learned filters, saves a figure plotting the fpr vs the proportion of space used
-    by the filter for the internal ML model.
+    by the filter for the internal ML model. Plots each filter and model type in the file: the Python filters with
+    random forests (run_exp_with_changing_model.py, whose results have no model_type column), or CascadedLBF's PLBF
+    with xgboost models (the sweeps in learned/utils/prepare_sweeps.py).
 
     Parameters
     ----------
     learned_filename : str
         Relative path of csv file storing learned filter results.
+    output_name : str
+        File name of the figure, in '../results/figures'.
         
     Returns
     -------
-    No return value: instead, saves the figure to the '../results/figures/learned' folder.
+    No return value: instead, saves the figure to the '../results/figures' folder.
     """
     learned_df = pd.read_csv(learned_filepath)
-    unique_filters = set(learned_df['filter'])
+    if 'model_type' not in learned_df:
+        learned_df['model_type'] = models["forest"]
+    model_keys = {model: name for name, model in {**models, **sweep_models}.items()}
+    unique_variants = sorted(set(zip(learned_df['filter'], learned_df['model_type'])))
     
     datasets = ["url", "ember", "shalla", "caida"]
     
@@ -769,14 +799,16 @@ def plot_changing_model_exp(learned_filepath: str):
     axs[0].set_ylabel("False Positive Rate")
     overall_max = None
     overall_min = None
+    lowest_proportion = 0.1
     for dataset in datasets:
         current_dataset_info = learned_df[learned_df['dataset'] == dataset]
-        for filter in unique_filters:
+        for filter, model_type in unique_variants:
+            variant = f"{filter}-{model_keys[model_type]}"
             proportions = []
             meds = []
             mins = []
             maxes = []
-            current_filter_data = current_dataset_info[current_dataset_info['filter'] == filter]
+            current_filter_data = current_dataset_info[(current_dataset_info['filter'] == filter) & (current_dataset_info['model_type'] == model_type)]
             unique_model_sizes = sorted(list(set(current_filter_data['model_bytes'])))
             proportion_fpr_mapping = dict()
             for model_size in unique_model_sizes:
@@ -798,16 +830,23 @@ def plot_changing_model_exp(learned_filepath: str):
                 maxes.append(max(fprs))
                 overall_max = max(fprs) if overall_max is None or overall_max < max(fprs) else overall_max
                 overall_min = min(fprs) if overall_min is None or overall_min > min(fprs) else overall_min
+            if not proportions:
+                continue
+            lowest_proportion = min(lowest_proportion, min(proportions))
             axs[current_count].set_title(dataset)
-            axs[current_count].plot(proportions, meds, label=(f"{filter}-forest" if current_count == 0 else ""), color=FILTER_COLORS[f"{filter}-forest"], marker=FILTER_MARKERS[f"{filter}-forest"])
-            axs[current_count].fill_between(proportions, mins, maxes, alpha=0.2, color=FILTER_COLORS[f"{filter}-forest"])
+            axs[current_count].plot(proportions, meds, label=(variant if current_count == 0 else ""), color=FILTER_COLORS[variant], marker=FILTER_MARKERS[variant])
+            axs[current_count].fill_between(proportions, mins, maxes, alpha=0.2, color=FILTER_COLORS[variant])
             axs[current_count].set_xlabel('Model Space Proportion')
             axs[current_count].set_xticks([0.2, 0.4, 0.6, 0.8])
-            axs[current_count].set_xlim([0.1, 0.9])
             axs[current_count].set_yscale('log')
         current_count += 1
-    fig.legend(loc="outside center right")
-    plt.savefig(f'../results/figures/combined_changing_model.pdf')
+    for ax in axs:
+        # the same range as before, extended to the left for proportions under 0.1
+        ax.set_xlim([min(0.1, lowest_proportion - 0.02), 0.9])
+    # a legend only when there is more than one line to tell apart
+    if len(fig.axes[0].get_legend_handles_labels()[1]) > 1:
+        fig.legend(loc="outside center right")
+    plt.savefig(f'../results/figures/{output_name}')
     plt.clf()
 
 def plot_dynamic_exp(learned_filepath : str, filter_filepath : str, learned_filters=None, unique_datasets=None, num_queries=10000000, output_name="combined_fpr_dynamic.pdf"):

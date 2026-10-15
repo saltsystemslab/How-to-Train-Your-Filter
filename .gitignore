@@ -3,14 +3,20 @@ logs/*
 !logs/.gitkeep
 data/*
 !data/compressed/
-results/figures/*
-!results/figures/.gitkeep
-results/learned/*
-!results/learned/.gitkeep
-results/aqf/*
-!results/aqf/.gitkeep
-results/parameter_search/*
-!results/parameter_search/.gitkeep
-results/stacked/*
-!results/stacked/.gitkeep
 .vscode
+
+# experiment output (results stay local; the scripts regenerate them)
+results/*
+sweeps/
+test_runs/
+*.log
+# third-party code that is cloned separately (see README)
+CascadedLBF/
+learned/ember_import/ember/
+learned/ember_import/build/
+learned/ember_import/dist/
+learned/ember_import/*.egg-info/
+# build files and editor/OS files
+._*
+.DS_Store
+__pycache__/

@@ -14,3 +14,4 @@ results/*
 aqfdata/*
 ember_import/*
 !ember_import/.gitkeep
+pyvenv.cfg

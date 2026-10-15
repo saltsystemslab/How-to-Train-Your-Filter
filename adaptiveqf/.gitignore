@@ -24,9 +24,31 @@ obj/
 external/splinterdb/
 !external/StackedFilters/
 !external/StackedFilters/**
+# the stacked filter's CMake build output and macOS resource forks
+external/StackedFilters/CMakeCache.txt
+external/StackedFilters/Makefile
+external/StackedFilters/cmake_install.cmake
+external/StackedFilters/CMakeFiles/
+external/StackedFilters/**/._*
+external/StackedFilters/ASFOptimizationTest
+external/StackedFilters/CQFDataGenerator
+external/StackedFilters/CuckooDataGenerator
+external/StackedFilters/Example
+external/StackedFilters/FirehoseDataGenerator
+external/StackedFilters/FirehoseDataGeneratorDiskVersion
+external/StackedFilters/InsertsDataGenerator
+external/StackedFilters/InsertsDataGenerator2
+external/StackedFilters/URLBlacklisting
+external/StackedFilters/URLBlacklistingDiskVersion
+external/StackedFilters/UniformDataGenerator
+external/StackedFilters/ZipfDiskVersionAdaptive
+external/StackedFilters/ZipfDiskVersionAdaptiveStages
+external/StackedFilters/ZipfGraphsDataGenerator
+external/StackedFilters/ZipfGraphsDataGeneratorDiskVersion
 data/
 
 *.bin
 *.zip
 
 datasets/
+.vscode/**

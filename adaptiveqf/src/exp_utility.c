@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/stat.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,6 +18,7 @@
 #include "include/hashutil.h"
 #include "include/rand_util.h"
 
+#include <sys/file.h>
 #include "include/exp_utility.h"
 
 #define READ_SIZE 4096
@@ -158,12 +160,10 @@ int insert_key(QF *qf, set_node *set, uint64_t set_len, uint64_t key, int count,
 	uint64_t total_filter_time = 0;
 	uint64_t total_set_time = 0;
 	int ret_hash_len;
-	gettimeofday(timecheck, NULL);
-	start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+	start_time = TIMED_NOW();
 	int ret = qf_insert_ret(qf, key, count, &ret_index, &ret_hash, &ret_hash_len, QF_NO_LOCK | QF_KEY_IS_HASH);
 	ret_hash += (ret_hash == 0) ? 1 : 0; // TODO : this is super sus!!!
-	gettimeofday(timecheck, NULL);
-	end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+	end_time = TIMED_NOW();
 	total_filter_time += end_time - start_time;
 	if (ret == QF_NO_SPACE) {
 		return 0;
@@ -171,21 +171,17 @@ int insert_key(QF *qf, set_node *set, uint64_t set_len, uint64_t key, int count,
 	else if (ret == 0) {
 		// insert didn't occur because the key was already present in the filter (lines 1229-1237 gqf.c)
 		uint64_t orig_key;
-		gettimeofday(timecheck, NULL);
-		start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+		start_time = TIMED_NOW();
 		ret = set_query(set, set_len, ret_hash, &orig_key);
-		gettimeofday(timecheck, NULL);
-		end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+		end_time = TIMED_NOW();
 		total_set_time += end_time - start_time;
 		if (!ret) {
 			fprintf(stderr, "error:\tfilter claimed to have fingerprint %lu but hashtable could not find it\n", ret_hash);
 			if (ret_hash == 0) {
 				// rare case where in an empty filter the empty slot is misidentified
-				gettimeofday(timecheck, NULL);
-				start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+				start_time = TIMED_NOW();
 				set_insert(set, set_len, ret_hash, key);
-				gettimeofday(timecheck, NULL);
-				end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+				end_time = TIMED_NOW();
 				total_set_time += end_time - start_time;
 				*filter_time = total_filter_time;
 				*set_time = total_set_time;
@@ -197,23 +193,19 @@ int insert_key(QF *qf, set_node *set, uint64_t set_len, uint64_t key, int count,
 			// If the two values are different, there is a hash collision and we need to extend both fingerprints.
 			// We reinsert by deleting the old fingerprint and inserting both new ones.
 			uint64_t old_hash = ret_hash;
-			gettimeofday(timecheck, NULL);
-			start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+			start_time = TIMED_NOW();
 			int ext_len = insert_and_extend(qf, ret_index, key, count, orig_key, &ret_hash, &ret_other_hash, QF_KEY_IS_HASH | QF_NO_LOCK);
-			gettimeofday(timecheck, NULL);
-			end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+			end_time = TIMED_NOW();
 			total_filter_time += end_time - start_time;
 			if (ext_len == QF_NO_SPACE) {
 				printf("filter is full after insert_and_extend\n");
 				return 0;
 			}
-			gettimeofday(timecheck, NULL);
-			start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+			start_time = TIMED_NOW();
 			set_delete(set, set_len, old_hash);
 			set_insert(set, set_len, ret_other_hash, orig_key);
 			set_insert(set, set_len, ret_hash, key);
-			gettimeofday(timecheck, NULL);
-			end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+			end_time = TIMED_NOW();
 			total_set_time += end_time - start_time;
 		}
 		*filter_time = total_filter_time;
@@ -222,11 +214,9 @@ int insert_key(QF *qf, set_node *set, uint64_t set_len, uint64_t key, int count,
 	}
 	else if (ret == 1) {
 		// insert successfully occurred, so just add the new element to the set
-		gettimeofday(timecheck, NULL);
-		start_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+		start_time = TIMED_NOW();
 		set_insert(set, set_len, ret_hash, key);
-		gettimeofday(timecheck, NULL);
-		end_time = timecheck->tv_sec * 1000000 + timecheck->tv_usec;
+		end_time = TIMED_NOW();
 		total_set_time += end_time - start_time;
 		*filter_time = total_filter_time;
 		*set_time = total_set_time;
@@ -291,7 +281,7 @@ char* get_dist_name(char *filename) {
 }
 
 // For the given file, reads the data into arrays of file offsets (per row) and insertion elements, and the number of inserts.
-int read_file(char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *insert_set, int *num_inserts) {
+int read_file(char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *insert_set, int *num_inserts, int *insert_rows) {
 	FILE * file_ptr;
 	file_ptr = fopen(filename, "r");
 	if (NULL == file_ptr) {
@@ -321,6 +311,7 @@ int read_file(char *filename, int obj_index, int label_index, char *buffer, long
 					url = strtok(buffer, ",");
 				}
 				if (url != NULL && strlen(url) > 0) {
+					if (insert_rows) insert_rows[curr_inserts] = curr_index;
 					insert_set[curr_inserts++] = hash_str(url);
 				}
 			} 
@@ -340,9 +331,9 @@ int read_file(char *filename, int obj_index, int label_index, char *buffer, long
 					token = strtok(NULL, ",");
 					count++;
 				}
-				if (label != NULL && atoi(label) == 1) {
-					char *item_copy = strdup(item);
-					insert_set[curr_inserts++] = hash_str(item_copy);
+				if (label != NULL && atoi(label) == 1 && item != NULL) {
+					if (insert_rows) insert_rows[curr_inserts] = curr_index;
+					insert_set[curr_inserts++] = hash_str(item);
 				}
 			}
 			curr_index++;
@@ -354,7 +345,7 @@ int read_file(char *filename, int obj_index, int label_index, char *buffer, long
 }
 
 // For the given file, reads the data into arrays of file offsets (per row) and query elements and query labels, the number of positive elements, and the number of queries.
-int read_queries(char *indexfilename, char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *query_set, uint64_t *query_labels, int *pos_count, int *query_count) {
+int read_queries(char *indexfilename, char *filename, int obj_index, int label_index, char *buffer, long *offsets, uint64_t *query_set, uint64_t *query_labels, size_t max_queries, int *pos_count, int *query_count, int *query_rows) {
 	FILE * index_file_ptr = fopen(indexfilename, "r");
 	if (!index_file_ptr) {
 		printf("couldn't open index file\n");
@@ -368,9 +359,11 @@ int read_queries(char *indexfilename, char *filename, int obj_index, int label_i
 	fgets(buffer, READ_SIZE, index_file_ptr); // get rid of the header row
 	int curr_query = 0;
 	int num_pos = 0;
-	while (fgets(buffer, READ_SIZE, index_file_ptr)) {
+	// stop once the query arrays are full, even if the index file has more rows
+	while ((size_t)curr_query < max_queries && fgets(buffer, READ_SIZE, index_file_ptr)) {
 		// obtain the index from the current row
 		int index = atoi(strtok(buffer, ","));
+		if (query_rows) query_rows[curr_query] = index;
 		// use offsets array to find element in original data
 		if (fseek(file_ptr, offsets[index], SEEK_SET) != 0) {
 			fprintf(stderr, "fseek failed");
@@ -414,9 +407,12 @@ int read_queries(char *indexfilename, char *filename, int obj_index, int label_i
 				token = strtok(NULL, ",");
 				count++;
 			}
+			if (item == NULL) {
+				fprintf(stderr, "skipping query row %d: no key column\n", index);
+				continue;
+			}
 			// insert all corresponding indexes into the query set.
-			char *item_copy = strdup(item);
-			query_set[curr_query] = hash_str(item_copy);
+			query_set[curr_query] = hash_str(item);
 			// also track the corresponding label for the query...
 			
 			if (label != NULL) {
@@ -458,19 +454,17 @@ int key_count_comp(const void *a, const void *b) {
     return (val_a < val_b) - (val_a > val_b);
 }
 
-// hashes a given string
+// hashes a given string to the 64-bit key the filters store. (This was djb2, whose collisions between short strings,
+// e.g. "gvt1.com" and "gx21.com", made some negative keys of the shalla dataset identical to positive keys.)
+#define HASH_STR_SEED 0x2c1b3c6d
 uint64_t hash_str(char *str) {
-	uint64_t hash = 5381;
-	int c;
-	while ((c = *str++)) {
-		hash = ((hash << 5) + hash) + c;
-	}
-	return hash;
+	return MurmurHash64A(str, (int)strlen(str), HASH_STR_SEED);
 }
 
 // For the given file, reads positives into insert_set and negatives into negative_set, along with file offsets (per row).
 int read_file_with_negatives(char *filename, int obj_index, int label_index, char *buffer, long *offsets,
-							 uint64_t *insert_set, int *num_inserts, uint64_t *negative_set, int *num_negatives) {
+							 uint64_t *insert_set, int *num_inserts, uint64_t *negative_set, int *num_negatives,
+							 int *insert_rows, int *negative_rows) {
 	FILE * file_ptr = fopen(filename, "r");
 	if (NULL == file_ptr) {
 		printf("file can't be opened \n");
@@ -502,8 +496,10 @@ int read_file_with_negatives(char *filename, int obj_index, int label_index, cha
 			}
 			if (url != NULL) {
 				if (malicious) {
+					if (insert_rows) insert_rows[curr_inserts] = curr_index;
 					insert_set[curr_inserts++] = hash_str(url);
 				} else {
+					if (negative_rows) negative_rows[curr_neg] = curr_index;
 					negative_set[curr_neg++] = hash_str(url);
 				}
 			}
@@ -522,13 +518,15 @@ int read_file_with_negatives(char *filename, int obj_index, int label_index, cha
 				token = strtok(NULL, ",");
 				count++;
 			}
-			char *item_copy = strdup(item);
-			if (label != NULL && atoi(label) == 1) {
-				insert_set[curr_inserts++] = hash_str(item_copy);
+			if (item == NULL) {
+				// no key column on this row
+			} else if (label != NULL && atoi(label) == 1) {
+				if (insert_rows) insert_rows[curr_inserts] = curr_index;
+				insert_set[curr_inserts++] = hash_str(item);
 			} else {
-				negative_set[curr_neg++] = hash_str(item_copy);
+				if (negative_rows) negative_rows[curr_neg] = curr_index;
+				negative_set[curr_neg++] = hash_str(item);
 			}
-			free(item_copy);
 		}
 		curr_index++;
 		offsets[curr_index] = ftell(file_ptr);
@@ -563,7 +561,7 @@ int build_training_negatives(uint64_t *query_set, uint64_t *query_labels, size_t
 			}
 		}
 	}
-	fprintf(stderr, "found %d unique negative queries in first %d queries\n", num_negative, num_check);
+	fprintf(stderr, "found %d unique negative queries in %d training queries\n", num_negative, num_check);
 
 	// now, convert the map to an array for sorting
 	struct key_count *count_array = malloc(num_negative * sizeof(struct key_count));
@@ -609,4 +607,94 @@ int build_training_negatives(uint64_t *query_set, uint64_t *query_labels, size_t
 	*sorted_negatives_out = sorted_negatives;
 	*cdf_out = cdf;
 	return num_negative;
+}
+
+// Loads a matrix stored in CascadedLBF's binary format (size_t rows, size_t cols, then row-major float32).
+float *load_float_matrix(const char *path, size_t *rows, size_t *cols) {
+	FILE *f = fopen(path, "rb");
+	if (!f) {
+		fprintf(stderr, "couldn't open %s\n", path);
+		return NULL;
+	}
+	uint64_t header[2];
+	if (fread(header, sizeof(uint64_t), 2, f) != 2) {
+		fprintf(stderr, "couldn't read the header of %s\n", path);
+		fclose(f);
+		return NULL;
+	}
+	float *data = malloc(header[0] * header[1] * sizeof(float));
+	if (!data || fread(data, sizeof(float), header[0] * header[1], f) != header[0] * header[1]) {
+		fprintf(stderr, "couldn't read the data of %s\n", path);
+		free(data);
+		fclose(f);
+		return NULL;
+	}
+	fclose(f);
+	*rows = header[0];
+	*cols = header[1];
+	return data;
+}
+
+float *map_float_matrix(const char *path, size_t *rows, size_t *cols) {
+	int fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "couldn't open %s\n", path);
+		return NULL;
+	}
+	struct stat st;
+	uint64_t header[2];
+	if (fstat(fd, &st) != 0 || pread(fd, header, sizeof(header), 0) != sizeof(header)
+		|| (uint64_t)st.st_size != sizeof(header) + header[0] * header[1] * sizeof(float)) {
+		fprintf(stderr, "couldn't read the header of %s\n", path);
+		close(fd);
+		return NULL;
+	}
+	char *base = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+	close(fd);
+	if (base == MAP_FAILED) {
+		fprintf(stderr, "couldn't map %s\n", path);
+		return NULL;
+	}
+	*rows = header[0];
+	*cols = header[1];
+	return (float *)(base + sizeof(header));
+}
+
+void unmap_float_matrix(float *data, size_t rows, size_t cols) {
+	if (data) munmap((char *)data - 2 * sizeof(uint64_t), 2 * sizeof(uint64_t) + rows * cols * sizeof(float));
+}
+
+// Copies the given rows of a row-major matrix with num_cols columns into out (num_selected * num_cols floats).
+void gather_rows(const float *matrix, size_t num_cols, const int *rows, size_t num_selected, float *out) {
+	for (size_t i = 0; i < num_selected; i++) {
+		memcpy(out + i * num_cols, matrix + (size_t)rows[i] * num_cols, num_cols * sizeof(float));
+	}
+}
+
+// Checks that the harness's view of each row matches the exported labels (row_labels, one per dataset row),
+// which catches any misalignment between the harness's row indices and the exported features.
+// labels holds the expected label of each of the num_selected rows, or NULL if they are all positives.
+int check_row_labels(const float *row_labels, size_t num_rows, const int *rows, const uint64_t *labels, size_t num_selected, const char *what) {
+	for (size_t i = 0; i < num_selected; i++) {
+		uint64_t expected = labels ? labels[i] : 1;
+		if (rows[i] < 0 || (size_t)rows[i] >= num_rows || (uint64_t)row_labels[rows[i]] != expected) {
+			fprintf(stderr, "%s %zu (row %d) has label %lu in the harness but not in the exported labels; the features do not line up with the dataset\n",
+					what, i, rows[i], expected);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+// Opens a results file for appending, positioned at its end, holding an exclusive lock until it is closed, so that
+// experiments writing the same file at the same time cannot interleave their rows or both write the header.
+FILE *open_results_file(const char *path) {
+	FILE *f = fopen(path, "a");
+	if (!f) {
+		fprintf(stderr, "couldn't open results file %s\n", path);
+		exit(EXIT_FAILURE);
+	}
+	flock(fileno(f), LOCK_EX);
+	fseek(f, 0, SEEK_END);
+	return f;
 }

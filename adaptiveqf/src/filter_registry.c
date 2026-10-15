@@ -10,6 +10,9 @@ include/filter_iface.h, and add it to the list below.
 static const filter_ops *registered_filters[] = {
 	&aqf_ops,
 	&stacked_ops,
+	&bloom_ops,
+	&plbf_ops,
+	&clbf_ops,
 };
 
 const filter_ops *find_filter(const char *name) {

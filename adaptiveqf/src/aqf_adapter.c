@@ -6,6 +6,7 @@ Filter-specific arguments: the log of the number of slots, and the number of rem
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <sys/time.h>
 
 #include "include/gqf.h"
@@ -23,6 +24,7 @@ typedef struct {
 	uint64_t ret_index, ret_hash;
 	int ret_hash_len;
 	uint64_t map_time;
+	uint64_t num_adaptations;	// successful adaptations since the filter was built
 } aqf_state;
 
 static void *aqf_create(const build_ctx *ctx) {
@@ -45,12 +47,10 @@ static void *aqf_create(const build_ctx *ctx) {
 	qf_set_auto_resize(&s->qf, false);
 
 	// create the reverse map
-	gettimeofday(&timecheck, NULL);
-	uint64_t start_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec, end_time;
+	uint64_t start_time = TIMED_NOW(), end_time;
 	s->set_len = ctx->num_positives;
 	s->set = calloc(s->set_len, sizeof(set_node));
-	gettimeofday(&timecheck, NULL);
-	end_time = timecheck.tv_sec * 1000000 + timecheck.tv_usec;
+	end_time = TIMED_NOW();
 	s->map_time = end_time - start_time;
 
 	// perform inserts
@@ -66,7 +66,7 @@ static void *aqf_create(const build_ctx *ctx) {
 	return s;
 }
 
-static int aqf_query(void *filter, uint64_t key) {
+static int aqf_query(void *filter, uint64_t key, const float *features) {
 	aqf_state *s = filter;
 	return qf_query(&s->qf, key, &s->ret_index, &s->ret_hash, &s->ret_hash_len, QF_KEY_IS_HASH | QF_NO_LOCK);
 }
@@ -85,11 +85,31 @@ static void aqf_on_false_positive(void *filter, uint64_t key) {
 			abort();
 		}
 		set_insert(s->set, s->set_len, s->ret_hash, orig_key);
+		s->num_adaptations++;
 	}
 	else if (s->ret_hash_len == QF_NO_SPACE) {
 		s->still_have_space = 0;
 		fprintf(stderr, "filter is full, no further adaptations\n");
 	}
+}
+
+// Expected FPR of a non-member query before any adaptation: the probability that one of the
+// n stored (q+r)-bit fingerprints matches the query's, 1 - (1 - 2^-(q+r))^n. n is the number of
+// distinct keys, which equals the number of reverse map entries (duplicates add none).
+static double aqf_expected_fpr(void *filter) {
+	aqf_state *s = filter;
+	uint64_t num_distinct = 0;
+	for (uint64_t i = 0; i < s->set_len; i++) {
+		set_node *ptr = &s->set[i];
+		if (!ptr->occupied) continue;
+		for (; ptr; ptr = ptr->next) num_distinct++;
+	}
+	double p_match = ldexp(1.0, -(int)(s->qbits + s->rbits));
+	return -expm1(num_distinct * log1p(-p_match));
+}
+
+static uint64_t aqf_num_adaptations(void *filter) {
+	return ((aqf_state *)filter)->num_adaptations;
 }
 
 static size_t aqf_size_bytes(void *filter) {
@@ -124,5 +144,8 @@ const filter_ops aqf_ops = {
 	.size_bytes = aqf_size_bytes,
 	.params_str = aqf_params_str,
 	.aux_build_time = aqf_aux_build_time,
+	.expected_fpr = aqf_expected_fpr,
+	.config_time = NULL,
+	.num_adaptations = aqf_num_adaptations,
 	.destroy = aqf_destroy,
 };
