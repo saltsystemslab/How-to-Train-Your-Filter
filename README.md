@@ -1,12 +1,11 @@
 # How to Train Your Filter: Should You Learn, Stack, or Adapt?
 
-Learned, stacked, and adaptive filters all represent promising advances over traditional filters for approximate membership testing, yet they have not been directly compared against each other. Learned filters achieve competitive space-accuracy trade-offs by leveraging machine learning models, stacked filters use workload knowledge to build cascading filters including
-negative values, while adaptive filters provide theoretically bounded false positive rates (regardless of query distribution) by requiring auxiliary reverse maps. This project presents the first comprehensive comparative evaluation of these three filter paradigms using real-world datasets and diverse query workloads including one-pass, uniform, Zipfian, and adversarial distributions.
+Learned, stacked, and adaptive filters all represent promising advances over traditional filters for approximate membership testing, yet they have not been directly compared against each other. Learned filters achieve competitive space-accuracy trade-offs by leveraging machine learning models, stacked filters use workload knowledge to build cascading filters including negative values, while adaptive filters provide theoretically bounded false positive rates (regardless of query distribution) by requiring auxiliary reverse maps. This project presents the first comprehensive comparative evaluation of these three filter paradigms using real-world datasets and diverse query workloads including one-pass, uniform, Zipfian, and adversarial distributions.
 
-This repository contains a compilation of implementations for **[Ada-BF](https://github.com/DAIZHENWEI/Ada-BF)**, **[FastPLBF](https://github.com/atsukisato/FastPLBF)**, **[Stacked](https://github.com/kylebd99/StackedFilters)**and **[AdaptiveQF](https://github.com/splatlab/adaptiveqf)** filters. The `adaptiveqf` folder originates from the source **AdaptiveQF** code, with the source **Stacked Filter** code moved within it to the `external/StackedFilters` folder. The `learned` folder originates from the source **FastPLBF** code, with the **Ada-BF** implementation moved inside. Minor changes to the **AdaptiveQF** were made to fix some bugs, while the **FastPLBF** and **Ada-BF** feature new versions which have a model compute key scores on-the-fly.
+This repository contains a compilation of implementations for the filters we compare: the **[AdaptiveQF](https://github.com/splatlab/adaptiveqf)**, the **[Stacked](https://github.com/kylebd99/StackedFilters)** filter, and the C++ **PLBF** and **CLBF** learned filters from **[CascadedLBF](https://github.com/atsukisato/CascadedLBF)**, along with the Bloom filter baseline that CascadedLBF uses. CascadedLBF also has its own experiments for these filters, which we don't use: our experiments call its filter implementations directly. The `adaptiveqf` folder originates from the source **AdaptiveQF** code, with the source **Stacked Filter** code moved within it to the `external/StackedFilters` folder. Its experiment harnesses run all five filters through a common interface, using the wrappers in `adaptiveqf/external` for the **Stacked**, Bloom and **CascadedLBF** filters. Minor changes to the **AdaptiveQF** were made to fix some bugs. The `learned` folder originates from the source **[FastPLBF](https://github.com/atsukisato/FastPLBF)** code, with the **[Ada-BF](https://github.com/DAIZHENWEI/Ada-BF)** implementation moved inside. It holds the plotting and utility scripts, as well as python versions of the **FastPLBF** (a separate implementation of the PLBF) and **Ada-BF** filters (which have a model compute key scores on-the-fly) used in optional supplementary experiments.
 
 ## Requirements
-To prepare the **AdaptiveQF**, you first need to have [SplinterDB](https://splinterdb.org/) set up in the `adaptiveqf/external` folder. Then, run `make` to create the necessary executables.
+To prepare the **AdaptiveQF**, you first need to have [SplinterDB](https://splinterdb.org/) set up in the `adaptiveqf/external` folder.
 
 The learned filters run from the `adaptiveqf` experiments (`plbf`, `clbf`) and the Bloom filter baseline use **[CascadedLBF](https://github.com/atsukisato/CascadedLBF)**, which is not included in this repository. Clone it into the root directory at the commit we used, along with its XGBoost submodule:
 ```
@@ -15,7 +14,7 @@ cd CascadedLBF
 git checkout 5927949a3df1789a6dead4adc6e33a844f1b94c9
 git submodule update --init thirdparty/xgboost
 ```
-`setup_server.sh` (see below) builds XGBoost, and `learned/utils/train_cascaded_models.sh` builds CascadedLBF's model trainer the first time it runs.
+Then, build XGBoost and run `make` in the `adaptiveqf` folder to create the necessary executables; `setup_server.sh` (see below) does both. `learned/utils/train_cascaded_models.sh` builds CascadedLBF's model trainer the first time it runs.
 
 The datasets **can be directly found as compressed files in the `data/compressed/`** folder. When decompressed, they should be placed in the `data/` folder as:
 - `url.tar.gz` => `malicious_url_scores.csv`
@@ -42,7 +41,7 @@ Once all the datasets are downloaded and stored in the correct location, we prov
 
 3. *(Optional reproducibility helpers, not needed to produce the results.)* To check a machine before running the experiments, run `setup_server.sh` from the root directory: it builds XGBoost and the harnesses and checks the tools, datasets, query files and models. Then run `test_small.sh`, which runs a small version of all experiments (url only, two sizes, 1 million queries, about an hour) and checks their results, leaving `results/` as it was.
 
-4. Once the queries are finished, use `run_queries.sh` in the root directory to run all experiments with the parameters described in the paper, for all five filters (`aqf`, `stacked`, `bloom`, `plbf`, `clbf`). The experiments run in two phases:
+4. Once the query files are generated, use `run_queries.sh` in the root directory to run all experiments with the parameters described in the paper, for all five filters (`aqf`, `stacked`, `bloom`, `plbf`, `clbf`). The experiments run in two phases:
    - the uniform workload at the size construction and query times are reported for (`TIMING_R`, the adaptiveqf's r = 5 size), timed, one experiment at a time with nothing else running (the adaptiveqf runs first on each dataset, since the other filters are built to its sizes);
    - the uniform workload at the other sizes and the Zipfian, one-pass, adversarial and dynamic (swapping and shifting) workloads, untimed and in parallel (`NUM_PARALLEL`), with the harnesses that record where the learned filters' false positives came from.
 
@@ -50,12 +49,12 @@ Once all the datasets are downloaded and stored in the correct location, we prov
 
    Every experiment runs single-threaded (as in the CLBF paper) and runs 3 trials; the dynamic workloads give every filter and trial the same queries and churns.
 
-   The python learned filter experiments (`plbf` and `adabf` from `learned/`) are only run with `RUN_PYTHON_LEARNED=1`, in background processes after both phases.
+   The optional python learned filter experiments (the **FastPLBF** and **Ada-BF** versions in `learned/`, run as `plbf` and `adabf` and separate from the CascadedLBF `plbf` above) are only run with `RUN_PYTHON_LEARNED=1`, in background processes after both phases.
 
 5. To run the learned filter sweeps (the model's share of the space and the proportion of negative keys in the training set), run `run_sweeps.sh` from the root directory after `run_queries.sh`. Each sweep runs in its own copy of the experiment layout under `sweeps/`, so the main results are untouched, and its figures are saved to `results/figures/`.
 
-6. When all experiments are finished running, from the root directory run `graph_results.sh` to plot the results: the comparison of the five filters and the radar chart summarizing every experiment are saved to `results/figures/generic/`, and the supplementary tables S1 and S2 to `results/tables/`.
+6. When all experiments are finished running, from the root directory run `graph_results.sh` to plot the results: the comparison of the five filters and the radar chart summarizing every experiment (for the **AdaptiveQF**, **Stacked**, **PLBF** and **CLBF** filters) are saved to `results/figures/generic/`, and the supplementary tables S1 and S2 to `results/tables/`. To save the radar chart as two figures instead (the overview with a legend, and one radar per filter), run `python3 plot_radar.py --split` from the `learned` folder. If the python learned filter experiments were run, their figures are plotted too.
 
-More information about filter implementations and utility scripts are found in the `adaptiveqf` and `learned` folders.
+More information about filter implementations and utility scripts is found in the `adaptiveqf` and `learned` folders.
 
 For any questions, please contact the authors of the paper.

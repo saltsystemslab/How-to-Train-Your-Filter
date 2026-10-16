@@ -1,8 +1,10 @@
- # AdaptiveQF and Stacked Filter
+ # AdaptiveQF and Filter Experiments
 
- This folder originates from the base implementation of the **[AdaptiveQf](https://github.com/splatlab/adaptiveqf)**.
+ This folder originates from the base implementation of the **[AdaptiveQF](https://github.com/splatlab/adaptiveqf)**.
 
  The main difference from the original code is that the `test` folder contains new scripts for various experiments, while `include/exp_utility.h` and `src/exp_utility.c` define utility functions used during those scripts.
+ These scripts run all five filters we compare (`aqf`, `stacked`, `bloom`, `plbf`, `clbf`), with the **Stacked**, Bloom and **CascadedLBF** filters called through the wrappers in `external`.
+ Our experiments use the `*_generic` scripts and `write_queries.c` described below. The other scripts in `test` and the filters in `other_filters` come with the original **AdaptiveQF** code and aren't used in our experiments.
 
  The `external` folder now includes the **[Stacked Filter](https://github.com/kylebd99/StackedFilters)** implementation.
  `StackedFilters/wrapper` contains a C wrapper (`extern "C"`) for the **Stacked Filter** allowing it to be called from the C experiment scripts.
@@ -11,18 +13,30 @@
  libraries in `obj/` because the two filters' headers define different classes with the same names.
 
  ### Learned filters (plbf, clbf)
- These filters query with each key's feature vector and need a trained XGBoost model. Before running them on a dataset:
- 1. Export the dataset's features (the same ones used by the learned filters in `../learned`), labels, and the XGBoost
+ These are **CascadedLBF**'s C++ PLBF (`CascadedLBF/src/plbf`) and CLBF (`CascadedLBF/src/clbf`), the learned filters in our
+ comparison. The CLBF's own optimizer also considers the case where the CLBF reduces to a PLBF
+ (`CascadedLBF/src/clbf/find_optimal_parameters_plbf.h`), which is a different code path from the `plbf` filter.
+ The wrappers in `external/cascaded_wrapper` call these filters directly: CascadedLBF's own experiments and scripts
+ (`CascadedLBF/experiment`, `CascadedLBF/scripts`, including its PLBF experiments) aren't used, apart from its XGBoost trainer
+ (`CascadedLBF/experiment/xgboost/train_xgboost.cpp`), and neither are its other filters.
+ Both are also separate from the python **FastPLBF** (a different PLBF implementation) and **Ada-BF** versions in `../learned`,
+ which are only used in optional supplementary experiments.
+
+ These filters query with each key's feature vector and need a trained XGBoost model. `../prepare_learned_models.sh` prepares
+ every dataset once; for a single dataset, its two steps are:
+ 1. Export the dataset's features (the same ones used by the python learned filters, defined in `../learned/updated_classifiers.py`), labels, and the XGBoost
     training and calibration sets: `cd ../learned && python3 utils/export_cascaded_inputs.py --dataset url`
     (writes to `../data/cascaded/url`).
  2. Train XGBoost models with CascadedLBF's trainer: `cd ../learned && ./utils/train_cascaded_models.sh url`
-    (depth 4, eta 0.3, 1-20 and 30-100 boosting rounds, written to `../data/cascaded/url/xgboost_d4_r<rounds>_e03`).
+    (eta 0.3; depth 4 with 1-20 and 30-100 boosting rounds, and depth 8 with 10-100 rounds, written to
+    `../data/cascaded/url/xgboost_d<depth>_r<rounds>_e03`).
 
  The model folder is the filter's second argument. Both filters are configured by a target FPR, so the adapter searches for
  the smallest target FPR whose size (model plus Bloom filters, measured as CascadedLBF reports it) fits the budget.
  - `clbf` is built as in CascadedLBF's experiments: the depth 4, 100 round model (`xgboost_d4_r100_e03`), lambda = 1 and mu = 0.
    It chooses how many of the model's trees to keep, so the model can be larger than the budget.
- - `plbf` always keeps its whole model. With `auto`, it uses the largest trained model no larger than 0.2x the budget.
+ - `plbf` always keeps its whole model. With `auto`, it takes the largest trained model of each depth no larger than 0.2x the
+   budget, and uses the one that reaches the lowest target FPR (the larger one if they are within 25% of each other).
 
  Each experiment has a single script that can run any supported filter. The filter is chosen by name as the first argument
  (e.g. `./test_distribution_generic aqf ...` or `./test_distribution_generic stacked ...`), followed by the shared experiment arguments
