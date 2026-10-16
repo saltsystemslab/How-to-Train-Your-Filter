@@ -121,21 +121,74 @@ def peak_adversarial(advers, datasets):
     return mean_scores(peaks.reset_index(), ["dataset"])
 
 
-def style(ax, angles, labels):
-    """A radar axis with the first axis at the top, going clockwise, and rings at scores 0, 0.5 and 1."""
+# shorter axis labels for the small radars of the split detail figure, which have less room around them
+SHORT_AXES = ["Constr.\nTime", "Query\nTime", "Static\nFPR", "Best-Case\nDyn. FPR", "Worst-Case\nAdv. FPR",
+              "Workload\nIndep."]
+ANGLES = np.linspace(0, 2 * np.pi, len(AXES), endpoint=False)
+
+
+def style(ax, labels=None, pad=4):
+    """
+    A radar axis with the first axis at the top, going clockwise, and rings at scores 0, 0.5 and 1. labels are the
+    axis labels (None for none).
+    """
     ax.set_theta_offset(np.pi / 2)
     ax.set_theta_direction(-1)
     ax.set_ylim(0, 1)
-    ax.set_xticks(angles, AXES if labels else [])
+    ax.set_xticks(ANGLES, labels if labels else [])
     ax.set_yticks([FLOOR, FLOOR + (1 - FLOOR) * 0.5, 1], [])
     ax.grid(color="#d0d0d0", lw=0.5)
     ax.spines["polar"].set_color("#b0b0b0")
     if labels:
-        ax.tick_params(axis="x", pad=4)
+        ax.tick_params(axis="x", pad=pad)
         # labels on the sides lean away from the circle so they don't run into the polygons
-        for label, angle in zip(ax.get_xticklabels(), angles):
+        for label, angle in zip(ax.get_xticklabels(), ANGLES):
             label.set_horizontalalignment("center" if np.isclose(np.sin(angle), 0) else
                                           "left" if np.sin(angle) > 0 else "right")
+
+
+def polygon(row):
+    """A filter's scores as a closed polygon of radii."""
+    radii = FLOOR + (1 - FLOOR) * row.values
+    return np.append(ANGLES, ANGLES[0]), np.append(radii, radii[0])
+
+
+def draw_overview(ax, scores, legend):
+    """Every filter's polygon overlaid on one labeled radar (with a legend entry each if legend)."""
+    style(ax, AXES)
+    # the outer ring is the best filter on an axis, the inner ring (radius FLOOR) the worst
+    ax.text(np.radians(9), 1, "best", fontsize=5.5, color="#808080", ha="left", va="bottom")
+    for f, row in scores.iterrows():
+        spec = FILTERS[f]
+        ax.plot(*polygon(row), color=spec["color"], lw=1.4, ls=spec["linestyle"], marker=spec["marker"],
+                markersize=3.5, zorder=3, label=spec["label"] if legend else None)
+        ax.fill(*polygon(row), color=spec["color"], alpha=0.07, zorder=2)
+
+
+def draw_single(ax, scores, f, labels=None, markersize=2.2):
+    """
+    One filter's polygon in its color over the other filters in gray, titled with the filter's name. With labels,
+    each axis is labeled with its name and the filter's score on it.
+    """
+    row = scores.loc[f]
+    style(ax, [f"{label}\n{score:.2f}" for label, score in zip(labels, row.values)] if labels else None, pad=2)
+    for other, orow in scores.iterrows():
+        if other != f:
+            ax.plot(*polygon(orow), color="#c8c8c8", lw=0.6, zorder=2)
+    spec = FILTERS[f]
+    ax.plot(*polygon(row), color=spec["color"], lw=1.2, ls=spec["linestyle"], marker=spec["marker"],
+            markersize=markersize, zorder=3)
+    ax.fill(*polygon(row), color=spec["color"], alpha=0.2, zorder=2)
+    # with labels, the title goes above the top axis's three-line label
+    ax.set_title(spec["label"], fontsize=7, fontweight="bold" if labels else "normal", pad=24 if labels else 3)
+
+
+def save(fig, out_dir, name):
+    os.makedirs(out_dir, exist_ok=True)
+    for ext in ["pdf", "png"]:
+        fig.savefig(os.path.join(out_dir, f"{name}.{ext}"), dpi=300)
+    plt.close(fig)
+    print(f"wrote {os.path.join(out_dir, name)}.pdf")
 
 
 def plot(scores, out_dir):
@@ -143,10 +196,6 @@ def plot(scores, out_dir):
     The overlaid radar of every filter, with a row of small radars under it that replaces the legend: each names
     one filter and draws its polygon in its color, with the other filters in gray behind it.
     """
-    angles = np.linspace(0, 2 * np.pi, len(AXES), endpoint=False)
-    closed = np.append(angles, angles[0])
-    polygon = lambda row: np.append(FLOOR + (1 - FLOOR) * row.values, FLOOR + (1 - FLOOR) * row.values[0])
-
     # sized to be placed at 100% width in one column, so the 7 pt text matches a paper's caption size
     with plt.rc_context({"font.size": 7, "axes.linewidth": 0.6}):
         # positions in inches: the big radar is kept narrow enough for its side labels to fit in the column,
@@ -154,35 +203,45 @@ def plot(scores, out_dir):
         height, main_size, small_size, small_bottom, main_bottom = 3.3, 1.62, 0.62, 0.06, 1.25
         fig = plt.figure(figsize=(COLUMN_WIDTH, height))
         inches = lambda left, bottom, w, h: [left / COLUMN_WIDTH, bottom / height, w / COLUMN_WIDTH, h / height]
+        draw_overview(fig.add_axes(inches((COLUMN_WIDTH - main_size) / 2, main_bottom, main_size, main_size),
+                                   projection="polar"), scores, legend=False)
+        slot = COLUMN_WIDTH / len(scores)
+        for i, f in enumerate(scores.index):
+            draw_single(fig.add_axes(inches(slot * i + (slot - small_size) / 2, small_bottom, small_size, small_size),
+                                     projection="polar"), scores, f)
+        save(fig, out_dir, "generic_radar")
+
+
+def plot_split(scores, out_dir):
+    """
+    The same chart as two single-column figures: generic_radar_overview, the overlaid radar with a legend, and
+    generic_radar_detail, a 2x2 grid of one radar per filter with its axes labeled and its scores printed.
+    """
+    with plt.rc_context({"font.size": 7, "axes.linewidth": 0.6}):
+        height, main_size, main_bottom = 2.6, 1.62, 0.6
+        fig = plt.figure(figsize=(COLUMN_WIDTH, height))
+        inches = lambda left, bottom, w, h: [left / COLUMN_WIDTH, bottom / height, w / COLUMN_WIDTH, h / height]
         ax = fig.add_axes(inches((COLUMN_WIDTH - main_size) / 2, main_bottom, main_size, main_size), projection="polar")
-        style(ax, angles, True)
-        # the outer ring is the best filter on an axis, the inner ring (radius FLOOR) the worst
-        ax.text(np.radians(9), 1, "best", fontsize=5.5, color="#808080", ha="left", va="bottom")
-        for f, row in scores.iterrows():
-            spec = FILTERS[f]
-            ax.plot(closed, polygon(row), color=spec["color"], lw=1.4, ls=spec["linestyle"], marker=spec["marker"],
-                    markersize=3.5, zorder=3)
-            ax.fill(closed, polygon(row), color=spec["color"], alpha=0.07, zorder=2)
+        draw_overview(ax, scores, legend=True)
+        fig.legend(loc="lower center", ncol=len(scores), frameon=False, handlelength=2.2, columnspacing=1.2,
+                   bbox_to_anchor=(0.5, 0))
+        save(fig, out_dir, "generic_radar_overview")
 
-        for i, (f, row) in enumerate(scores.iterrows()):
-            slot = COLUMN_WIDTH / len(scores)
-            small = fig.add_axes(inches(slot * i + (slot - small_size) / 2, small_bottom, small_size, small_size),
-                                 projection="polar")
-            style(small, angles, False)
-            for other, orow in scores.iterrows():
-                if other != f:
-                    small.plot(closed, polygon(orow), color="#c8c8c8", lw=0.6, zorder=2)
-            spec = FILTERS[f]
-            small.plot(closed, polygon(row), color=spec["color"], lw=1.2, ls=spec["linestyle"], marker=spec["marker"],
-                       markersize=2.2, zorder=3)
-            small.fill(closed, polygon(row), color=spec["color"], alpha=0.2, zorder=2)
-            small.set_title(spec["label"], fontsize=7, pad=3)
-
-        os.makedirs(out_dir, exist_ok=True)
-        for ext in ["pdf", "png"]:
-            fig.savefig(os.path.join(out_dir, f"generic_radar.{ext}"), dpi=300)
-        plt.close(fig)
-    print(f"wrote {os.path.join(out_dir, 'generic_radar')}.pdf")
+        # each cell of the grid holds one radar, centered, with room for its axis labels (name and score) around it
+        cols = 2
+        rows = int(np.ceil(len(scores) / cols))
+        cell_w, cell_h, size = COLUMN_WIDTH / cols, 1.55, 0.68
+        height = cell_h * rows
+        fig = plt.figure(figsize=(COLUMN_WIDTH, height))
+        inches = lambda left, bottom, w, h: [left / COLUMN_WIDTH, bottom / height, w / COLUMN_WIDTH, h / height]
+        with plt.rc_context({"font.size": 5.5}):
+            for i, f in enumerate(scores.index):
+                # a little right of center: the left-side labels ("Worst-Case") are the widest
+                left = cell_w * (i % cols) + (cell_w - size) / 2 + 0.07
+                bottom = cell_h * (rows - 1 - i // cols) + (cell_h - size) / 2 - 0.12
+                draw_single(fig.add_axes(inches(left, bottom, size, size), projection="polar"), scores, f,
+                            labels=SHORT_AXES, markersize=2.5)
+        save(fig, out_dir, "generic_radar_detail")
 
 
 if __name__ == "__main__":
@@ -190,6 +249,9 @@ if __name__ == "__main__":
     parser.add_argument("--results", default="../results", help="folder holding the harnesses' combined csv files")
     parser.add_argument("--out", default="../results/figures/generic", help="folder to save the figure to")
     parser.add_argument("--datasets", nargs="+", default=DATASETS, help="datasets to score")
+    parser.add_argument("--split", action="store_true",
+                        help="save the overview radar (with a legend) and the per-filter radars as two figures, "
+                             "generic_radar_overview and generic_radar_detail, instead of one generic_radar")
     parser.add_argument("--no-training", action="store_true", help="leave model training out of construction time")
     args = parser.parse_args()
     plt.rcParams["text.usetex"] = False
@@ -212,4 +274,4 @@ if __name__ == "__main__":
     print(scores.rename(columns=lambda c: c.replace("\n", " ")).round(3).to_string())
     os.makedirs(args.out, exist_ok=True)
     scores.rename(columns=lambda c: c.replace("\n", " ")).to_csv(os.path.join(args.out, "radar_scores.csv"))
-    plot(scores, args.out)
+    (plot_split if args.split else plot)(scores, args.out)
